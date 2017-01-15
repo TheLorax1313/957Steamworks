@@ -1,8 +1,12 @@
 package org.usfirst.frc.team957.robot;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.ctre.CANTalon;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -17,6 +21,19 @@ public class Robot extends IterativeRobot {
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 
+	//Joystick Defining
+	Joystick Joy1 = new Joystick(1); //flight stick 1
+	Joystick Joy2 = new Joystick(2); //flight stick 2
+	Joystick controller1 = new Joystick(3); //controller
+	
+	CANTalon t1 = new CANTalon(1);
+	CANTalon t2 = new CANTalon(2);
+	CANTalon t3 = new CANTalon(3);
+	CANTalon t4 = new CANTalon(4);
+	int speedSwitch;
+	RobotDrive m_Drive = new RobotDrive(t1, t2, t3, t4);
+	
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -26,6 +43,10 @@ public class Robot extends IterativeRobot {
 		chooser.addDefault("Default Auto", defaultAuto);
 		chooser.addObject("My Auto", customAuto);
 		SmartDashboard.putData("Auto choices", chooser);
+		speedSwitch = 1;
+		
+		
+		
 	}
 
 	/**
@@ -68,6 +89,38 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		
+		boolean but8C = controller1.getRawButton(8); //Start Button on Controller
+		boolean but6F = Joy1.getRawButton(8); //Button 6 on Flight Stick 1
+		
+		double speed;
+		
+		switch(speedSwitch){
+		case 1: speed = 1;
+		if (but8C == true || but6F == true){
+			speedSwitch = 2;
+		}	 
+		break;
+		case 2: 
+		if (but8C == false || but6F == false){
+			speedSwitch = 3;
+		} 
+		break;
+		case 3: speed = 0.25;
+		if (but8C == true || but6F == true){
+			speedSwitch = 4;
+		} 
+		break;
+		case 4:
+		if (but8C == false || but6F == false){
+			speedSwitch = 1;
+		} 
+		SmartDashboard.putNumber("SpeedSwitch", speedSwitch);
+		}
+		
+			
+		
+    
 	}
 
 	/**
