@@ -3,6 +3,7 @@ package org.usfirst.frc.team957.robot;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.CANTalon;
@@ -26,19 +27,21 @@ public class Robot extends IterativeRobot {
 	Joystick Joy2 = new Joystick(2); //flight stick 2
 	Joystick controller1 = new Joystick(0); //controller
 	
-	CANTalon t1 = new CANTalon(1);
-	CANTalon t2 = new CANTalon(2);
-	CANTalon t3 = new CANTalon(3);
-	CANTalon t4 = new CANTalon(4);
+	CANTalon fl = new CANTalon(2);
+	CANTalon bl = new CANTalon(3);
+	CANTalon fr = new CANTalon(4);
+	CANTalon br = new CANTalon(5);
 	int speedSwitch;
-	RobotDrive m_Drive = new RobotDrive(t1, t2, t3, t4);
+	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
 	int DriveToggle; 
 	double rotation;
 	double driveX;
 	double driveY;
 	int JoyToggle;
 	Boolean DriveModeSwitch;
-	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+	//ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+	Command ControllerCommand;
+	//SendableChooser ControllerChooser;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -50,8 +53,9 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
-		JoyToggle = 0;
-		
+		JoyToggle = 2;
+		//ControllerChooser = new SendableChooser();
+		//ControllerChooser.addDefault("Default Program",new DualJoy());
 	}
 
 	/**
@@ -95,7 +99,13 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		
-		boolean but8C = controller1.getRawButton(8); //Start Button on Controller
+		rotation = (((controller1.getRawAxis(1))-(controller1.getRawAxis(5)))/2);
+		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
+		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
+		m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,0);
+		
+		
+		/**boolean but8C = controller1.getRawButton(8); //Start Button on Controller
 		boolean but6F = Joy1.getRawButton(8); //Button 6 on Flight Stick 1
 		
 		double speed;
@@ -121,8 +131,9 @@ public class Robot extends IterativeRobot {
 			speedSwitch = 1;
 		} 
 		SmartDashboard.putNumber("SpeedSwitch", speedSwitch);
+		*/
 		//Drive Code
-		 switch(JoyToggle){
+		 /**switch(JoyToggle){
 	        case 0://Dual Joystick tank, waiting for dash input to switch
 	        	if(controller1.getRawButton(7)){
 	        		JoyToggle = 1;
@@ -162,13 +173,14 @@ public class Robot extends IterativeRobot {
 				 if(!(controller1.getRawButton(7)))
 					 JoyToggle = 0;
 					 break;}
+					 
 		
 		}
 		 switch(DriveToggle){
 	        case 0://GyroDrive is in use, waiting for button to be pressed
+	        	m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,0);//Switch Drive modes
 	        	if(DriveModeSwitch){
 	        		DriveToggle = 1;
-	        		m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,0);//Switch Drive modes
 	        	}
 	        	break;
 			 case 1://Drive 2 selected, waiting for release
@@ -186,7 +198,7 @@ public class Robot extends IterativeRobot {
 					 DriveToggle = 0;
 			 	break;}
 		
-    
+    */
 	}
 
 	/**
