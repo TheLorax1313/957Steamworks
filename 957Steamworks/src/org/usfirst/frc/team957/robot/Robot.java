@@ -7,6 +7,7 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.CANTalon;
+import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 
 /**
@@ -21,12 +22,10 @@ public class Robot extends IterativeRobot {
 	final String customAuto = "My Auto";
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
-
 	//Joystick Defining
 	Joystick Joy1 = new Joystick(1); //flight stick 1
 	Joystick Joy2 = new Joystick(2); //flight stick 2
 	Joystick controller1 = new Joystick(0); //controller
-	
 	CANTalon fl = new CANTalon(2);
 	CANTalon bl = new CANTalon(3);
 	CANTalon fr = new CANTalon(4);
@@ -41,6 +40,7 @@ public class Robot extends IterativeRobot {
 	double ContChooseDual;
 	double ContChooseSingle;
 	double ContChoose360;
+	Relay Lights;
 	Boolean DriveModeSwitch;
 	//ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 	Command ControllerCommand;
@@ -63,6 +63,8 @@ public class Robot extends IterativeRobot {
 		ControllerChooser.addObject("Single JoySticks",1);
 		ControllerChooser.addObject("360 Controller",2);
 		SmartDashboard.putData("Controller Chooser",ControllerChooser);
+		Lights = new Relay (0);
+		Lights.setDirection(Relay.Direction.kForward);
 	}
 
 	/**
@@ -106,6 +108,7 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		JoyToggle =  (int) ControllerChooser.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
+		Relay.Value light;
 		
 		
 		
@@ -143,21 +146,25 @@ public class Robot extends IterativeRobot {
 	        		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
 	        		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
 	        		DriveModeSwitch = (Joy1.getRawButton(3));
+	                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+	                Lights.set(light);
 	        	break;
 			 case 1://Single Joystick, waiting for dash input to switch
 				 rotation = (Joy1.getRawAxis(2));
 					 driveX = (Joy1.getRawAxis(0));
 					 driveY = (Joy1.getRawAxis(1));
 					 DriveModeSwitch = (Joy1.getRawButton(3));
+		                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+		                Lights.set(light);
 			 	break;
 			 case 2://Xbox Controller, waiting for dash input to switch
 		         rotation = (((controller1.getRawAxis(1))-(controller1.getRawAxis(5)))/2);
 		        		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
 		        		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
 		        		DriveModeSwitch = (controller1.getRawButton(7));
+		        		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+		                Lights.set(light);
 		        break;
-			
-		
 	}
 		 switch(DriveToggle){
 	        case 0://GyroDrive is in use, waiting for button to be pressed
@@ -180,8 +187,6 @@ public class Robot extends IterativeRobot {
 				 if(!DriveModeSwitch)
 					 DriveToggle = 0;
 			 	break;}
-		
-    
 	}
 
 	/**
