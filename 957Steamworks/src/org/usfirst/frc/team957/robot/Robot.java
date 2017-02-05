@@ -109,36 +109,6 @@ public class Robot extends IterativeRobot {
 		JoyToggle =  (int) ControllerChooser.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
 		Relay.Value light;
-		
-		
-		
-		/**boolean but8C = controller1.getRawButton(8); //Start Button on Controller
-		boolean but6F = Joy1.getRawButton(8); //Button 6 on Flight Stick 1
-		
-		double speed;
-		
-		switch(speedSwitch){
-		case 1: speed = 1;
-		if (but8C == true || but6F == true){
-			speedSwitch = 2;
-		}	 
-		break;
-		case 2: 
-		if (but8C == false || but6F == false){
-			speedSwitch = 3;
-		} 
-		break;
-		case 3: speed = 0.25;
-		if (but8C == true || but6F == true){
-			speedSwitch = 4;
-		} 
-		break;
-		case 4:
-		if (but8C == false || but6F == false){
-			speedSwitch = 1;
-		} 
-		SmartDashboard.putNumber("SpeedSwitch", speedSwitch);
-		*/
 		//Drive Code for each controller type selected by Java Dashboard
 		 switch(JoyToggle){
 	        case 0://Dual Joystick tank
@@ -164,6 +134,10 @@ public class Robot extends IterativeRobot {
 		        		DriveModeSwitch = (controller1.getRawButton(7));
 		        		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 		                Lights.set(light);
+		                //If the controller input is less than our threshold then make it equal to 0
+		                if(Math.abs(driveX)<0.1) driveX=0;
+		                if(Math.abs(driveY)<0.1) driveY=0;
+
 		        break;
 	}
 		 //using field orientation using the gyro vs normal drive
@@ -175,12 +149,12 @@ public class Robot extends IterativeRobot {
 	        	}
 	        	break;
 			 case 1://Drive 2 selected, waiting for release
-				 m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,0);
+				 m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
 				 if(!DriveModeSwitch)//Waiting for button release
 					 DriveToggle = 2;
 				 break;
 			 case 2://Drive 2 selected, looking for pressed
-				 m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,0);
+				 m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
 				 if(DriveModeSwitch){//Waiting for button press
 					 DriveToggle = 3;
 				 }
