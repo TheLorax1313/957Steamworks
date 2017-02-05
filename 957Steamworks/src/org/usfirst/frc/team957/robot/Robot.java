@@ -108,63 +108,61 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		JoyToggle =  (int) ControllerChooser.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
-		Relay.Value light;
+		Relay.Value light=Relay.Value.kOff;
+
 		//Drive Code for each controller type selected by Java Dashboard
-		 switch(JoyToggle){
+		switch(JoyToggle){
 	        case 0://Dual Joystick tank
 	        	rotation = (((Joy1.getRawAxis(1))-(Joy2.getRawAxis(1)))/2);
-	        		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
-	        		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
-	        		DriveModeSwitch = (Joy1.getRawButton(3));
-	                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-	                Lights.set(light);
+        		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
+        		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
+        		DriveModeSwitch = (Joy1.getRawButton(3));
+                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 	        	break;
 			 case 1://Single Joystick
-				 rotation = (Joy1.getRawAxis(2));
-					 driveX = (Joy1.getRawAxis(0));
-					 driveY = (Joy1.getRawAxis(1));
-					 DriveModeSwitch = (Joy1.getRawButton(3));
-		                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-		                Lights.set(light);
+				rotation = (Joy1.getRawAxis(2));
+				driveX = (Joy1.getRawAxis(0));
+				driveY = (Joy1.getRawAxis(1));
+				DriveModeSwitch = (Joy1.getRawButton(3));
+				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 			 	break;
 			 case 2://Xbox Controller
-		         rotation = (((controller1.getRawAxis(1))-(controller1.getRawAxis(5)))/2);
-		        		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
-		        		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
-		        		DriveModeSwitch = (controller1.getRawButton(7));
-		        		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-		                Lights.set(light);
-		                //If the controller input is less than our threshold then make it equal to 0
-		                if(Math.abs(driveX)<0.1) driveX=0;
-		                if(Math.abs(driveY)<0.1) driveY=0;
+		        rotation = (((controller1.getRawAxis(1))-(controller1.getRawAxis(5)))/2);
+        		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
+        		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
+        		DriveModeSwitch = (controller1.getRawButton(7));
+        		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+                //If the controller input is less than our threshold then make it equal to 0
+                if(Math.abs(driveX)<0.1) driveX=0;
+                if(Math.abs(driveY)<0.1) driveY=0;
 
 		        break;
-	}
-		 //using field orientation using the gyro vs normal drive
-		 switch(DriveToggle){
-	        case 0://GyroDrive is in use, waiting for button to be pressed
-	        	m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
-	        	if(DriveModeSwitch){//Waiting for button press
-	        		DriveToggle = 1;
-	        	}
-	        	break;
-			 case 1://Drive 2 selected, waiting for release
-				 m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
-				 if(!DriveModeSwitch)//Waiting for button release
-					 DriveToggle = 2;
-				 break;
-			 case 2://Drive 2 selected, looking for pressed
-				 m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
-				 if(DriveModeSwitch){//Waiting for button press
-					 DriveToggle = 3;
-				 }
-			 	break;
-			 case 3://GyroDrive is in use, looking for release
-				 m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
-				 if(!DriveModeSwitch)//Waiting for button release
-					 DriveToggle = 0;
-			 	break;}
-	}
+		}
+		Lights.set(light);
+		//using field orientation using the gyro vs normal drive
+		switch(DriveToggle){
+			case 0://GyroDrive is in use, waiting for button to be pressed
+				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
+				if(DriveModeSwitch)//Waiting for button press
+					DriveToggle = 1;
+				break;
+			case 1://Drive 2 selected, waiting for release
+				m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
+				if(!DriveModeSwitch)//Waiting for button release
+					DriveToggle = 2;
+				break;
+			case 2://Drive 2 selected, looking for pressed
+				m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
+				if(DriveModeSwitch)//Waiting for button press
+					DriveToggle = 3;
+				break;
+			case 3://GyroDrive is in use, looking for release
+				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
+				if(!DriveModeSwitch)//Waiting for button release
+					DriveToggle = 0;
+				break;
+		}
+	}	
 
 	/**
 	 * This function is called periodically during test mode
