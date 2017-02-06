@@ -3,6 +3,7 @@ package org.usfirst.frc.team957.robot;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
+import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -65,6 +66,8 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Controller Chooser",ControllerChooser);
 		Lights = new Relay (0);
 		Lights.setDirection(Relay.Direction.kForward);
+		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
+        m_Drive.setInvertedMotor(MotorType.kRearRight, true);
 	}
 
 	/**
