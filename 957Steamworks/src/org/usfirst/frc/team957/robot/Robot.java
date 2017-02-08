@@ -47,6 +47,7 @@ public class Robot extends IterativeRobot {
 	Command ControllerCommand;
 	int selectedValue;
 	SendableChooser ControllerChooser;
+	String DriveMode;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -58,6 +59,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
+		DriveMode = "Field Oriented";
 		JoyToggle = 0;
 		ControllerChooser = new SendableChooser();
 		ControllerChooser.addDefault("Dual JoySticks",0);
@@ -68,6 +70,7 @@ public class Robot extends IterativeRobot {
 		Lights.setDirection(Relay.Direction.kForward);
 		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
+        gyro.reset();
 	}
 
 	/**
@@ -142,6 +145,7 @@ public class Robot extends IterativeRobot {
         if(Math.abs(driveX)<0.2) driveX=0;
         if(Math.abs(driveY)<0.2) driveY=0;
         if(Math.abs(rotation)<0.2) rotation=0;
+        
 
 		Lights.set(light);
 		//using field orientation using the gyro vs normal drive
@@ -155,6 +159,7 @@ public class Robot extends IterativeRobot {
 				m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
 				if(!DriveModeSwitch)//Waiting for button release
 					DriveToggle = 2;
+				DriveMode = "Robot Oriented";
 				break;
 			case 2://Drive 2 selected, looking for pressed
 				m_Drive.mecanumDrive_Cartesian(.5*driveX,.5*driveY,rotation,0);
@@ -165,10 +170,10 @@ public class Robot extends IterativeRobot {
 				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
 				if(!DriveModeSwitch)//Waiting for button release
 					DriveToggle = 0;
+				DriveMode = "Field Oriented";
 				break;
 		}
-		SmartDashboard.putNumber("Drive Toggle value",DriveToggle);
-
+		SmartDashboard.putString("Drive mode",DriveMode );
 	}	
 
 	/**
