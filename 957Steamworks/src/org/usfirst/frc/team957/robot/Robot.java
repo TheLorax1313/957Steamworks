@@ -46,7 +46,12 @@ public class Robot extends IterativeRobot {
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 	Command ControllerCommand;
 	int selectedValue;
-	SendableChooser ControllerChooser;
+	SendableChooser<Integer> ControllerChooser;
+	SendableChooser<Integer> SpeedChooser;
+	SendableChooser<Integer> gyroReset;
+	int speedChooserSel; 
+	int GyroBut;
+	double speedMultiplier;
 	String DriveMode;
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -61,16 +66,27 @@ public class Robot extends IterativeRobot {
 		DriveToggle = 0;
 		DriveMode = "Field Oriented";
 		JoyToggle = 0;
-		ControllerChooser = new SendableChooser();
+		ControllerChooser = new SendableChooser<Integer>();
 		ControllerChooser.addDefault("Dual JoySticks",0);
 		ControllerChooser.addObject("Single JoySticks",1);
-		ControllerChooser.addObject("360 Controller",2);
+		ControllerChooser.addObject("360 Controller",2);		
 		SmartDashboard.putData("Controller Chooser",ControllerChooser);
+
+		SpeedChooser = new SendableChooser<Integer>();
+		SpeedChooser.addDefault("Full Speed",0);
+		SpeedChooser.addObject("Half Speed",1);
+		SpeedChooser.addObject("Quarter Speed",2);
+		SmartDashboard.putData("Speed Chooser",SpeedChooser);
+		gyroReset = new SendableChooser<Integer>();
+		gyroReset.addDefault("waiting",0);
+		gyroReset.addObject("Reset",1);
+		SmartDashboard.putData("Gyro Reset",gyroReset);
 		Lights = new Relay (0);
 		Lights.setDirection(Relay.Direction.kForward);
 		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
-        gyro.reset();
+        gyro.calibrate();
+        speedMultiplier = 1;
 	}
 
 	/**
@@ -86,8 +102,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		//autoSelected = chooser.getSelected();
-		 //autoSelected = SmartDashboard.getString("Auto Selector",defaultAuto);
+		gyro.reset();
 		System.out.println("Auto selected: " + autoSelected);
 	}
 
@@ -107,15 +122,24 @@ public class Robot extends IterativeRobot {
 		}
 	}
 
+	@Override
+	public void teleopInit() {
+		//System.out.println("Auto selected: " + autoSelected);
+	}
+	
+	
 	/**
 	 * This function is called periodically during operator control
 	 */
 	@Override
 	public void teleopPeriodic() {
-		JoyToggle =  (int) ControllerChooser.getSelected();
+		JoyToggle = (int) ControllerChooser.getSelected();
+		speedChooserSel = (int) SpeedChooser.getSelected();
+		GyroBut = (int) gyroReset.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
 		Relay.Value light=Relay.Value.kOff;
-
+		
+		if(GyroBut==1) gyro.reset();
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(JoyToggle){
 	        case 0://Dual Joystick tank
@@ -142,10 +166,29 @@ public class Robot extends IterativeRobot {
 
 		        break;
 		}
-        if(Math.abs(driveX)<0.2) driveX=0;
-        if(Math.abs(driveY)<0.2) driveY=0;
-        if(Math.abs(rotation)<0.2) rotation=0;
-        
+        if(Math.abs(driveX)<0.1) driveX=0;
+        if(Math.abs(driveY)<0.1) driveY=0;
+        if(Math.abs(rotation)<0.1) rotation=0;
+		switch(speedChooserSel){
+	        case 0://Dual Joystick tank
+	        	speedMultiplier = 1;
+	        	break;
+	        case 1: 
+	        	speedMultiplier = 0.5;
+	        	break;
+	        case 2: 
+	        	speedMultiplier = 0.25;
+	        	break;
+			default:
+	        	speedMultiplier = 1;
+		}
+        driveX = driveX * speedMultiplier; 
+		SmartDashboard.putNumber("Drive X value",driveX);
+        driveY = driveY * speedMultiplier; 
+		SmartDashboard.putNumber("Drive Y value",driveY);
+        rotation = rotation * speedMultiplier; 		
+        SmartDashboard.putNumber("Drive Rotation value",rotation);
+
 
 		Lights.set(light);
 		//using field orientation using the gyro vs normal drive
