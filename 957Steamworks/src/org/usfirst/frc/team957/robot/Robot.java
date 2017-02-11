@@ -4,12 +4,14 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 /**
  * The VM is configured to automatically run this class, and to call the
@@ -34,6 +36,7 @@ public class Robot extends IterativeRobot {
 	int speedSwitch;
 	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
 	int DriveToggle; 
+	int LidToggle; 
 	double rotation;
 	double driveX;
 	double driveY;
@@ -43,6 +46,7 @@ public class Robot extends IterativeRobot {
 	double ContChoose360;
 	Relay Lights;
 	Boolean DriveModeSwitch;
+	Boolean LidModeSwitch;
 	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
 	Command ControllerCommand;
 	int selectedValue;
@@ -53,6 +57,8 @@ public class Robot extends IterativeRobot {
 	int GyroBut;
 	double speedMultiplier;
 	String DriveMode;
+	String LidMode;
+	DoubleSolenoid LidDouble = new DoubleSolenoid(0, 1);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -64,7 +70,9 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", chooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
+		LidToggle = 0;
 		DriveMode = "Field Oriented";
+		LidMode = "Down";
 		JoyToggle = 0;
 		ControllerChooser = new SendableChooser<Integer>();
 		ControllerChooser.addDefault("Dual JoySticks",0);
@@ -87,6 +95,7 @@ public class Robot extends IterativeRobot {
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
         gyro.calibrate();
         speedMultiplier = 1;
+        
 	}
 
 	/**
@@ -155,6 +164,7 @@ public class Robot extends IterativeRobot {
 				driveY = (Joy1.getRawAxis(1));
 				DriveModeSwitch = (Joy1.getRawButton(3));
 				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+				
 			 	break;
 			 case 2://Xbox Controller
 		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
@@ -163,9 +173,34 @@ public class Robot extends IterativeRobot {
         		DriveModeSwitch = (controller1.getRawButton(7));
         		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
                 //If the controller input is less than our threshold then make it equal to 0
-
+        		LidModeSwitch = (controller1.getRawButton(2));
 		        break;
+		       
 		}
+		switch(LidToggle){
+		case 0://GyroDrive is in use, waiting for button to be pressed
+			LidDouble.set(DoubleSolenoid.Value.kForward);
+			if(LidModeSwitch)//Waiting for button press
+				LidToggle = 1;
+			break;
+		case 1://Drive 2 selected, waiting for release
+			
+			if(!LidModeSwitch)//Waiting for button release
+				LidToggle = 2;
+			LidMode = "Up";
+			break;
+		case 2://Drive 2 selected, looking for pressed
+			LidDouble.set(DoubleSolenoid.Value.kReverse);
+			if(LidModeSwitch)//Waiting for button press
+				LidToggle = 3;
+			break;
+		case 3://GyroDrive is in use, looking for release
+			
+			if(!LidModeSwitch)//Waiting for button release
+				LidToggle = 0;
+			DriveMode = "Down";
+			break;
+			
         if(Math.abs(driveX)<0.1) driveX=0;
         if(Math.abs(driveY)<0.1) driveY=0;
         if(Math.abs(rotation)<0.1) rotation=0;
