@@ -4,7 +4,6 @@ import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -157,6 +156,7 @@ public class Robot extends IterativeRobot {
         		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
         		DriveModeSwitch = (Joy1.getRawButton(3));
                 light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+				LidModeSwitch = false;
 	        	break;
 			 case 1://Single Joystick
 				rotation = (Joy1.getRawAxis(2));
@@ -164,7 +164,7 @@ public class Robot extends IterativeRobot {
 				driveY = (Joy1.getRawAxis(1));
 				DriveModeSwitch = (Joy1.getRawButton(3));
 				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-				
+				LidModeSwitch = false;
 			 	break;
 			 case 2://Xbox Controller
 		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
@@ -177,33 +177,36 @@ public class Robot extends IterativeRobot {
 		        break;
 		       
 		}
+		
 		switch(LidToggle){
-		case 0://GyroDrive is in use, waiting for button to be pressed
-			LidDouble.set(DoubleSolenoid.Value.kForward);
-			if(LidModeSwitch)//Waiting for button press
-				LidToggle = 1;
-			break;
-		case 1://Drive 2 selected, waiting for release
-			
-			if(!LidModeSwitch)//Waiting for button release
-				LidToggle = 2;
-			LidMode = "Up";
-			break;
-		case 2://Drive 2 selected, looking for pressed
-			LidDouble.set(DoubleSolenoid.Value.kReverse);
-			if(LidModeSwitch)//Waiting for button press
-				LidToggle = 3;
-			break;
-		case 3://GyroDrive is in use, looking for release
-			
-			if(!LidModeSwitch)//Waiting for button release
-				LidToggle = 0;
-			DriveMode = "Down";
-			break;
-			
+			case 0://GyroDrive is in use, waiting for button to be pressed
+				LidDouble.set(DoubleSolenoid.Value.kForward);
+				if(LidModeSwitch)//Waiting for button press
+					LidToggle = 1;
+				break;
+			case 1://Drive 2 selected, waiting for release
+				LidDouble.set(DoubleSolenoid.Value.kReverse);
+				if(!LidModeSwitch)//Waiting for button release
+					LidToggle = 2;
+				LidMode = "Up";
+				break;
+			case 2://Drive 2 selected, looking for pressed
+				LidDouble.set(DoubleSolenoid.Value.kReverse);
+				if(LidModeSwitch)//Waiting for button press
+					LidToggle = 3;
+				break;
+			case 3://GyroDrive is in use, looking for release
+				LidDouble.set(DoubleSolenoid.Value.kForward);
+				if(!LidModeSwitch)//Waiting for button release
+					LidToggle = 0;
+				LidMode = "Down";
+				break;
+		}
+		SmartDashboard.putString("Lid Status: ",LidMode );
+    
         if(Math.abs(driveX)<0.1) driveX=0;
         if(Math.abs(driveY)<0.1) driveY=0;
-        if(Math.abs(rotation)<0.1) rotation=0;
+        if(Math.abs(rotation)<0.15) rotation=0;
 		switch(speedChooserSel){
 	        case 0://Dual Joystick tank
 	        	speedMultiplier = 1;
