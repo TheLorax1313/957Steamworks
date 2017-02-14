@@ -1,5 +1,6 @@
 package org.usfirst.frc.team957.robot;
 
+import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
@@ -7,7 +8,9 @@ import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import com.ctre.CANTalon;
+
 import edu.wpi.first.wpilibj.Relay;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
@@ -32,6 +35,11 @@ public class Robot extends IterativeRobot {
 	CANTalon bl = new CANTalon(3);
 	CANTalon fr = new CANTalon(4);
 	CANTalon br = new CANTalon(5);
+	// We want to use 1X encoding. We would use 4X if we pull back to the Talons. 
+    Encoder m_encoderFL = new Encoder(0, 1, false, Encoder.EncodingType.k1X);
+    Encoder m_encoderBL = new Encoder(2, 3, false, Encoder.EncodingType.k1X);
+    Encoder m_encoderFR = new Encoder(4, 5, true, Encoder.EncodingType.k1X);	// Right motors are reversed. 
+    Encoder m_encoderBR = new Encoder(6, 7, true, Encoder.EncodingType.k1X);	// Right motors are reversed. 
 	int speedSwitch;
 	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
 	int DriveToggle; 
@@ -94,7 +102,19 @@ public class Robot extends IterativeRobot {
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
         gyro.calibrate();
         speedMultiplier = 1;
-        
+        // Reset encoders
+        m_encoderFL.reset();
+        m_encoderBL.reset();
+        m_encoderFR.reset();
+        m_encoderBR.reset();
+        // Our encoders are 360 Cycles Per Revolution and 1440 Pulses Per Revolution
+        // For the gearbox, we are using an 8.46 to 1 gear ratio. This doesn't matter since we're measuring the output shaft. 
+        // Calculation is 2*pi*Radius(our wheels are 6") / Cycles Per Revolution.
+        // 
+        m_encoderFL.setDistancePerPulse(Math.PI*6/1440);
+        m_encoderBL.setDistancePerPulse(Math.PI*6/1440);
+        m_encoderFR.setDistancePerPulse(Math.PI*6/1440);
+        m_encoderBR.setDistancePerPulse(Math.PI*6/1440);
 	}
 
 	/**
@@ -146,7 +166,36 @@ public class Robot extends IterativeRobot {
 		GyroBut = (int) gyroReset.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
 		Relay.Value light=Relay.Value.kOff;
+		int countFL = m_encoderFL.get();
+		int countBL = m_encoderBL.get();
+		int countFR = m_encoderFR.get();
+		int countBR = m_encoderBR.get();
 		
+		SmartDashboard.putNumber("Front Left Encoder count: ",countFL);
+		SmartDashboard.putNumber("Back Left Encoder count: ",countBL);
+		SmartDashboard.putNumber("Front Right Encoder count: ",countFR);
+		SmartDashboard.putNumber("Back Right Encoder count: ",countBR);
+
+		double rateFL = m_encoderFL.getRate();
+		double rateBL = m_encoderBL.getRate();
+		double rateFR = m_encoderFR.getRate();
+		double rateBR = m_encoderBR.getRate();
+		
+		SmartDashboard.putNumber("Front Left Encoder rate: ",rateFL);
+		SmartDashboard.putNumber("Back Left Encoder rate: ",rateBL);
+		SmartDashboard.putNumber("Front Right Encoder rate: ",rateFR);
+		SmartDashboard.putNumber("Back Right Encoder rate: ",rateBR);
+
+		double distanceFL = m_encoderFL.getDistance();
+		double distanceBL = m_encoderBL.getDistance();
+		double distanceFR = m_encoderFR.getDistance();
+		double distanceBR = m_encoderBR.getDistance();
+		
+		SmartDashboard.putNumber("Front Left Encoder distance: ",distanceFL);
+		SmartDashboard.putNumber("Back Left Encoder distance: ",distanceBL);
+		SmartDashboard.putNumber("Front Right Encoder distance: ",distanceFR);
+		SmartDashboard.putNumber("Back Right Encoder distance: ",distanceBR);
+
 		if(GyroBut==1) gyro.reset();
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(JoyToggle){
