@@ -190,11 +190,13 @@ public class Robot extends IterativeRobot {
 		double distanceBL = m_encoderBL.getDistance();
 		double distanceFR = m_encoderFR.getDistance();
 		double distanceBR = m_encoderBR.getDistance();
+		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
 		
-		SmartDashboard.putNumber("Front Left Encoder distance: ",distanceFL);
-		SmartDashboard.putNumber("Back Left Encoder distance: ",distanceBL);
-		SmartDashboard.putNumber("Front Right Encoder distance: ",distanceFR);
-		SmartDashboard.putNumber("Back Right Encoder distance: ",distanceBR);
+		SmartDashboard.putNumber("Front Left Encoder distance (in): ",distanceFL);
+		SmartDashboard.putNumber("Back Left Encoder distance (in): ",distanceBL);
+		SmartDashboard.putNumber("Front Right Encoder distance (in): ",distanceFR);
+		SmartDashboard.putNumber("Back Right Encoder distance (in): ",distanceBR);
+		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
 
 		if(GyroBut==1) gyro.reset();
 		//Drive Code for each controller type selected by Java Dashboard
