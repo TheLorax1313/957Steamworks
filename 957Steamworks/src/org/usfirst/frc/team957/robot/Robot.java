@@ -65,7 +65,7 @@ public class Robot extends IterativeRobot {
 	double speedMultiplier;
 	String DriveMode;
 	String LidMode;
-	DoubleSolenoid LidDouble = new DoubleSolenoid(0, 1);
+	DoubleSolenoid LidDouble = new DoubleSolenoid(1, 0, 1);
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -165,6 +165,7 @@ public class Robot extends IterativeRobot {
 		speedChooserSel = (int) SpeedChooser.getSelected();
 		GyroBut = (int) gyroReset.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
+		SmartDashboard.putNumber("Gyro Reset value",GyroBut);
 		Relay.Value light=Relay.Value.kOff;
 		int countFL = m_encoderFL.get();
 		int countBL = m_encoderBL.get();
@@ -198,7 +199,9 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Back Right Encoder distance (in): ",distanceBR);
 		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
 
-		if(GyroBut==1) gyro.reset();
+		if(GyroBut==1) {
+			gyro.reset();
+		}
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(JoyToggle){
 	        case 0://Dual Joystick tank
@@ -254,10 +257,11 @@ public class Robot extends IterativeRobot {
 				break;
 		}
 		SmartDashboard.putString("Lid Status: ",LidMode );
-    
         if(Math.abs(driveX)<0.1) driveX=0;
         if(Math.abs(driveY)<0.1) driveY=0;
         if(Math.abs(rotation)<0.15) rotation=0;
+		rotation = .75*rotation;
+
 		switch(speedChooserSel){
 	        case 0://Dual Joystick tank
 	        	speedMultiplier = 1;
@@ -273,6 +277,7 @@ public class Robot extends IterativeRobot {
 		}
         driveX = driveX * speedMultiplier; 
 		SmartDashboard.putNumber("Drive X value",driveX);
+		SmartDashboard.putNumber("Gyro value",gyro.getAngle());
         driveY = driveY * speedMultiplier; 
 		SmartDashboard.putNumber("Drive Y value",driveY);
         rotation = rotation * speedMultiplier; 		
