@@ -38,7 +38,7 @@ public class Robot extends IterativeRobot {
 	// We want to use 1X encoding. We would use 4X if we pull back to the Talons. 
     Encoder m_encoderFL = new Encoder(0, 1, false, Encoder.EncodingType.k1X);
     Encoder m_encoderBL = new Encoder(2, 3, false, Encoder.EncodingType.k1X);
-    Encoder m_encoderFR = new Encoder(4, 5, true, Encoder.EncodingType.k1X);	// Right motors are reversed. 
+    Encoder m_encoderFR = new Encoder(4, 5, true , Encoder.EncodingType.k1X);	// Right motors are reversed. 
     Encoder m_encoderBR = new Encoder(6, 7, true, Encoder.EncodingType.k1X);	// Right motors are reversed. 
 	int speedSwitch;
 	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
@@ -111,10 +111,10 @@ public class Robot extends IterativeRobot {
         // For the gearbox, we are using an 8.46 to 1 gear ratio. This doesn't matter since we're measuring the output shaft. 
         // Calculation is 2*pi*Radius(our wheels are 6") / Cycles Per Revolution.
         // 
-        m_encoderFL.setDistancePerPulse(Math.PI*6/1440);
-        m_encoderBL.setDistancePerPulse(Math.PI*6/1440);
-        m_encoderFR.setDistancePerPulse(Math.PI*6/1440);
-        m_encoderBR.setDistancePerPulse(Math.PI*6/1440);
+        m_encoderFL.setDistancePerPulse(Math.PI*6/360);
+        m_encoderBL.setDistancePerPulse(Math.PI*6/360);
+        m_encoderFR.setDistancePerPulse(Math.PI*6/360);
+        m_encoderBR.setDistancePerPulse(Math.PI*6/360);
 	}
 
 	/**
