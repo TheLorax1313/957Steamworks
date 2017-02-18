@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-
+import edu.wpi.first.wpilibj.Spark;
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.Relay;
@@ -23,8 +23,14 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  * directory.
  */
 public class Robot extends IterativeRobot {
-	final String defaultAuto = "Default";
-	final String customAuto = "My Auto";
+	// RiverTODO: Rename class member variables to start with m_ 
+	final String m_DoNothing = "Do Nothing";
+	final String m_CrosstheLine = "Cross the Line";
+	final String m_TurnRight = "Turn Right";
+	final String m_TurnLeft = "Turn Left";
+	final String m_Forward = "Forward";
+	// RiverTODO: Add autoState integer variable to track the state we're in for all auto modes. 
+	int m_autoState;
 	String autoSelected;
 	SendableChooser<String> chooser = new SendableChooser<>();
 	//Joystick Defining
@@ -35,6 +41,7 @@ public class Robot extends IterativeRobot {
 	CANTalon bl = new CANTalon(3);
 	CANTalon fr = new CANTalon(4);
 	CANTalon br = new CANTalon(5);
+	Spark Climb = new Spark(0);
 	// We want to use 1X encoding. We would use 4X if we pull back to the Talons. 
     Encoder m_encoderFL = new Encoder(0, 1, false, Encoder.EncodingType.k1X);
     Encoder m_encoderBL = new Encoder(2, 3, false, Encoder.EncodingType.k1X);
@@ -54,11 +61,13 @@ public class Robot extends IterativeRobot {
 	Relay Lights;
 	Boolean DriveModeSwitch;
 	Boolean LidModeSwitch;
-	ADXRS450_Gyro gyro = new ADXRS450_Gyro();
+	ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
 	Command ControllerCommand;
 	int selectedValue;
 	SendableChooser<Integer> ControllerChooser;
+	// RiverTODO: Add Enum for ControllerChooser values  (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	SendableChooser<Integer> SpeedChooser;
+	// RiverTODO: Add Enum for SpeedChooser values  (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	SendableChooser<Integer> gyroReset;
 	int speedChooserSel; 
 	int GyroBut;
@@ -72,8 +81,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		chooser.addDefault("Default Auto", defaultAuto);
-		chooser.addObject("My Auto", customAuto);
+		chooser.addDefault("Do Nothing", m_DoNothing);
+		chooser.addObject("Cross the Line", m_CrosstheLine);
+		chooser.addObject("Turn Right", m_TurnRight);
+		chooser.addObject("Cross the Line", m_TurnLeft);
+		chooser.addObject("Cross the Line", m_Forward);
 		SmartDashboard.putData("Auto choices", chooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
@@ -100,7 +112,7 @@ public class Robot extends IterativeRobot {
 		Lights.setDirection(Relay.Direction.kForward);
 		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
-        gyro.calibrate();
+        m_gyro.calibrate();
         speedMultiplier = 1;
         // Reset encoders
         m_encoderFL.reset();
@@ -130,7 +142,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		gyro.reset();
+		m_gyro.reset();
 		System.out.println("Auto selected: " + autoSelected);
 	}
 
@@ -140,12 +152,54 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		switch (autoSelected) {
-		case customAuto:
-			// Put custom auto code here
-			break;
-		case defaultAuto:
-		default:
+		case m_DoNothing:	// RiverTODO: Rename to correct name
+			default:
 			// Put default auto code here
+			
+			break;
+		case m_CrosstheLine:
+			// Put custom auto code here
+			resetEncoders();
+			m_Drive.mecanumDrive_Cartesian(0,1,0,0);
+			break;
+		case m_TurnRight:
+			// Put custom auto code here
+			resetEncoders();
+			
+						// RiverTODO: Basic concept of code for drive & turn.
+						// Create case statement to handle states of this auto: Initialize, Drive forward, Turn, Initialize, Drive forward, (add comment for enable vision and TODO for Caleb)
+						// 1: Reset encoder counts
+						// 2: Call drive forward function to drive forward X distance (We will have to determine the correct distances)
+						// 3: Call turn to angle function to turn the robot to the desired angle. (We will have to determine angle)
+						// 4: Reset encoder counts (or alternatively, store current distance and drive current + X distance) 
+						// 5: Call drive forward function to drive forward X distance 
+						// 6: Add placeholder comment for Caleb's vision tracking
+			break;
+		case m_TurnLeft:
+			// Put custom auto code here
+			resetEncoders();
+			
+						// RiverTODO: Basic concept of code for drive & turn.
+						// Create case statement to handle states of this auto: Initialize, Drive forward, Turn, Initialize, Drive forward, (add comment for enable vision and TODO for Caleb)
+						// 1: Reset encoder counts
+						// 2: Call drive forward function to drive forward X distance (We will have to determine the correct distances)
+						// 3: Call turn to angle function to turn the robot to the desired angle. (We will have to determine angle)
+						// 4: Reset encoder counts (or alternatively, store current distance and drive current + X distance) 
+						// 5: Call drive forward function to drive forward X distance 
+						// 6: Add placeholder comment for Caleb's vision tracking
+			break;
+		case m_Forward:
+			// Put custom auto code here
+			resetEncoders();
+			
+						// RiverTODO: Basic concept of code for drive & turn.
+						// Create case statement to handle states of this auto: Initialize, Drive forward, Turn, Initialize, Drive forward, (add comment for enable vision and TODO for Caleb)
+						// 1: Reset encoder counts
+						// 2: Call drive forward function to drive forward X distance (We will have to determine the correct distances)
+						// 3: Call turn to angle function to turn the robot to the desired angle. (We will have to determine angle)
+						// 4: Reset encoder counts (or alternatively, store current distance and drive current + X distance) 
+						// 5: Call drive forward function to drive forward X distance 
+						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
 		}
 	}
@@ -162,7 +216,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		JoyToggle = (int) ControllerChooser.getSelected();
-		speedChooserSel = (int) SpeedChooser.getSelected();
+		speedChooserSel = (int) SpeedChooser.getSelected();		// RiverTODO: rename variable to something like selectedSpeed
 		GyroBut = (int) gyroReset.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
 		SmartDashboard.putNumber("Gyro Reset value",GyroBut);
@@ -200,10 +254,11 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
 
 		if(GyroBut==1) {
-			gyro.reset();
+			m_gyro.reset();
 		}
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(JoyToggle){
+		// RiverTODO: Use Enum for ControllerChooser values in JoyToggle cases (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	        case 0://Dual Joystick tank
 	        	rotation = (((Joy2.getRawAxis(1))-(Joy1.getRawAxis(1)))/2);
         		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
@@ -211,6 +266,7 @@ public class Robot extends IterativeRobot {
         		DriveModeSwitch = (Joy1.getRawButton(3));
                 light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 				LidModeSwitch = false;
+				Climb.set((Joy1.getRawAxis(3)+1)/2);
 	        	break;
 			 case 1://Single Joystick
 				rotation = (Joy1.getRawAxis(2));
@@ -219,6 +275,7 @@ public class Robot extends IterativeRobot {
 				DriveModeSwitch = (Joy1.getRawButton(3));
 				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 				LidModeSwitch = false;
+				Climb.set((Joy1.getRawAxis(3)+1)/2);
 			 	break;
 			 case 2://Xbox Controller
 		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
@@ -228,6 +285,7 @@ public class Robot extends IterativeRobot {
         		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
                 //If the controller input is less than our threshold then make it equal to 0
         		LidModeSwitch = (controller1.getRawButton(2));
+        		Climb.set(controller1.getRawAxis(3));
 		        break;
 		       
 		}
@@ -263,7 +321,8 @@ public class Robot extends IterativeRobot {
 		rotation = .75*rotation;
 
 		switch(speedChooserSel){
-	        case 0://Dual Joystick tank
+		// RiverTODO: Use Enum for ControllerChooser values in speedChooserSel cases (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
+	        case 0:
 	        	speedMultiplier = 1;
 	        	break;
 	        case 1: 
@@ -277,7 +336,7 @@ public class Robot extends IterativeRobot {
 		}
         driveX = driveX * speedMultiplier; 
 		SmartDashboard.putNumber("Drive X value",driveX);
-		SmartDashboard.putNumber("Gyro value",gyro.getAngle());
+		SmartDashboard.putNumber("Gyro value",m_gyro.getAngle());
         driveY = driveY * speedMultiplier; 
 		SmartDashboard.putNumber("Drive Y value",driveY);
         rotation = rotation * speedMultiplier; 		
@@ -288,7 +347,7 @@ public class Robot extends IterativeRobot {
 		//using field orientation using the gyro vs normal drive
 		switch(DriveToggle){
 			case 0://GyroDrive is in use, waiting for button to be pressed
-				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
+				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,m_gyro.getAngle());
 				if(DriveModeSwitch)//Waiting for button press
 					DriveToggle = 1;
 				break;
@@ -304,7 +363,7 @@ public class Robot extends IterativeRobot {
 					DriveToggle = 3;
 				break;
 			case 3://GyroDrive is in use, looking for release
-				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,gyro.getAngle());
+				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,m_gyro.getAngle());
 				if(!DriveModeSwitch)//Waiting for button release
 					DriveToggle = 0;
 				DriveMode = "Field Oriented";
@@ -319,5 +378,75 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 	}
+	public void resetEncoders(){
+		m_encoderFL.reset();
+        m_encoderBL.reset();
+        m_encoderFR.reset();
+        m_encoderBR.reset();
+	}
+	//Encoder count needs to be reset each time it is first called
+	public boolean driveForDistance(int Distance,double MaxPower){
+		boolean retVal=true;
+		double distanceFL = m_encoderFL.getDistance();
+		double distanceBL = m_encoderBL.getDistance();
+		double distanceFR = m_encoderFR.getDistance();
+		double distanceBR = m_encoderBR.getDistance();
+		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
+		if (avgDistance > 6 && avgDistance < 12){
+			MaxPower= MaxPower/4;
+			retVal=false;
+		}
+		if (avgDistance < 6){
+			MaxPower= 0.25;
+			retVal=false;
+		}
+		if (avgDistance > 6 && avgDistance < 12){
+			MaxPower= 0.5;
+			retVal=false;
+		}
+		if (avgDistance > 6 && avgDistance < 12){
+			MaxPower= 1;
+			retVal=false;
+		}
+		if (avgDistance > 12 && avgDistance < Distance - 12){
+			MaxPower= 0.5;
+			retVal=false;
+		}
+		if (avgDistance > Distance - 6){
+			MaxPower= 0.25;
+			retVal=false;
+		}
+		if (avgDistance > Distance){
+			MaxPower=0;
+			retVal=true;
+		}
+		
+		m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,m_gyro.getAngle());
+		return retVal;
+	}
+	// RiverTODO: Add "resetEncoders" method to reset encoder counts to 0 when needed. 
+	
+	// RiverTODO: Add "driveForDistance" method that accepts a distance and a max power value and returns boolean completed value. 
+		// Eventually it would be good to have this method allow for driving backwards too. 
+		// Switch statement based on distance traveled
+		// If encoder average distance is less than 6 (inches) motors @ 1/4 max power value. return false.
+		// distance > 6" & distance < 12" go 1/2 max power value. return false.
+		// distance > 12" & < input distance - 12" full max power value.  return false.
+		// distance > input distance - 12" & distance < input distance - 6" go 1/2 max power value. return false.
+		// distance > input distance - 6" motors @ 1/4 max power value. return false.
+		// distance > input distance stop return true.
+
+	// RiverTODO: Add "turnXDegrees" method to accept an angle, boolean direction (ie: turnRight) and max power value and turn to that angle. 
+	// need a member variable to track original heading value (double) and a boolean flag to indicate if heading has been saved. 
+		// save original heading if it has not been saved and set flag. 
+		// Switch statement based on turn direction
+		// Right: current heading < original + desired,  rotate right, return false
+			// If current heading > original + desired, stop, clear flag and return true
+		// Left: current heading > original - desired,  rotate left, return false 
+			// If current heading < original - desired, stop, clear flag and return true
+		// For now I would ignore ramping because it will be a lot more tricky than driving forward or back.
+		// 
+	
+
 }
 
