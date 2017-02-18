@@ -32,7 +32,7 @@ public class Robot extends IterativeRobot {
 	// RiverTODO: Add autoState integer variable to track the state we're in for all auto modes. 
 	int m_autoState;
 	String autoSelected;
-	SendableChooser<String> chooser = new SendableChooser<>();
+	SendableChooser<String> autoChooser = new SendableChooser<>();
 	//Joystick Defining
 	Joystick Joy1 = new Joystick(1); //flight stick 1
 	Joystick Joy2 = new Joystick(2); //flight stick 2
@@ -81,12 +81,13 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		chooser.addDefault("Do Nothing", m_DoNothing);
-		chooser.addObject("Cross the Line", m_CrosstheLine);
-		chooser.addObject("Turn Right", m_TurnRight);
-		chooser.addObject("Cross the Line", m_TurnLeft);
-		chooser.addObject("Cross the Line", m_Forward);
-		SmartDashboard.putData("Auto choices", chooser);
+		autoChooser = new SendableChooser<String>();
+		autoChooser.addDefault("Do Nothing", m_DoNothing);
+		autoChooser.addObject("Cross the Line", m_CrosstheLine);
+		autoChooser.addObject("Turn Right", m_TurnRight);
+		autoChooser.addObject("Cross the Line", m_TurnLeft);
+		autoChooser.addObject("Cross the Line", m_Forward);
+		SmartDashboard.putData("Auto choices", autoChooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
 		LidToggle = 0;
@@ -160,7 +161,7 @@ public class Robot extends IterativeRobot {
 		case m_CrosstheLine:
 			// Put custom auto code here
 			resetEncoders();
-			m_Drive.mecanumDrive_Cartesian(0,1,0,0);
+			driveForDistance(80,0.5,true);
 			break;
 		case m_TurnRight:
 			// Put custom auto code here
@@ -191,14 +192,7 @@ public class Robot extends IterativeRobot {
 		case m_Forward:
 			// Put custom auto code here
 			resetEncoders();
-			
-						// RiverTODO: Basic concept of code for drive & turn.
-						// Create case statement to handle states of this auto: Initialize, Drive forward, Turn, Initialize, Drive forward, (add comment for enable vision and TODO for Caleb)
-						// 1: Reset encoder counts
-						// 2: Call drive forward function to drive forward X distance (We will have to determine the correct distances)
-						// 3: Call turn to angle function to turn the robot to the desired angle. (We will have to determine angle)
-						// 4: Reset encoder counts (or alternatively, store current distance and drive current + X distance) 
-						// 5: Call drive forward function to drive forward X distance 
+			driveForDistance(80,0.5,true);
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
 		}
@@ -385,7 +379,7 @@ public class Robot extends IterativeRobot {
         m_encoderBR.reset();
 	}
 	//Encoder count needs to be reset each time it is first called
-	public boolean driveForDistance(int Distance,double MaxPower){
+	public boolean driveForDistance(int Distance,double MaxPower,boolean UseGyro){
 		boolean retVal=true;
 		double distanceFL = m_encoderFL.getDistance();
 		double distanceBL = m_encoderBL.getDistance();
@@ -420,10 +414,17 @@ public class Robot extends IterativeRobot {
 			MaxPower=0;
 			retVal=true;
 		}
-		
-		m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,m_gyro.getAngle());
+		if (UseGyro)
+			m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,m_gyro.getAngle());
+		else
+			m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,0);
 		return retVal;
 	}
+	/**public boolean turnXDegrees(int Turn,double TurnPower){
+		if ( > ){
+		}
+		
+	} **/
 	// RiverTODO: Add "resetEncoders" method to reset encoder counts to 0 when needed. 
 	
 	// RiverTODO: Add "driveForDistance" method that accepts a distance and a max power value and returns boolean completed value. 
