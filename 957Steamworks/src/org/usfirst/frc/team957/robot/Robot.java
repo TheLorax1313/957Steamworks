@@ -266,7 +266,7 @@ public class Robot extends IterativeRobot {
         		DriveModeSwitch = (Joy1.getRawButton(3));
                 light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 				LidModeSwitch = false;
-				Climb.set((Joy1.getRawAxis(3)+1)/2);
+				Climb.set((-(Joy1.getRawAxis(3))+1)/2);
 	        	break;
 			 case 1://Single Joystick
 				rotation = (Joy1.getRawAxis(2));
@@ -275,7 +275,7 @@ public class Robot extends IterativeRobot {
 				DriveModeSwitch = (Joy1.getRawButton(3));
 				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
 				LidModeSwitch = false;
-				Climb.set((Joy1.getRawAxis(3)+1)/2);
+				Climb.set((-(Joy1.getRawAxis(3))+1)/2);
 			 	break;
 			 case 2://Xbox Controller
 		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
