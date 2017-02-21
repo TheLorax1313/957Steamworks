@@ -37,6 +37,7 @@ public class Robot extends IterativeRobot {
 	Joystick Joy1 = new Joystick(1); //flight stick 1
 	Joystick Joy2 = new Joystick(2); //flight stick 2
 	Joystick controller1 = new Joystick(0); //controller
+	Joystick navController = new Joystick(3); //controller
 	CANTalon fl = new CANTalon(2);
 	CANTalon bl = new CANTalon(3);
 	CANTalon fr = new CANTalon(4);
@@ -219,34 +220,36 @@ public class Robot extends IterativeRobot {
 		int countBL = m_encoderBL.get();
 		int countFR = m_encoderFR.get();
 		int countBR = m_encoderBR.get();
-		
+		/**
 		SmartDashboard.putNumber("Front Left Encoder count: ",countFL);
 		SmartDashboard.putNumber("Back Left Encoder count: ",countBL);
 		SmartDashboard.putNumber("Front Right Encoder count: ",countFR);
 		SmartDashboard.putNumber("Back Right Encoder count: ",countBR);
-
+**/
 		double rateFL = m_encoderFL.getRate();
 		double rateBL = m_encoderBL.getRate();
 		double rateFR = m_encoderFR.getRate();
 		double rateBR = m_encoderBR.getRate();
+		/**
 		
 		SmartDashboard.putNumber("Front Left Encoder rate: ",rateFL);
 		SmartDashboard.putNumber("Back Left Encoder rate: ",rateBL);
 		SmartDashboard.putNumber("Front Right Encoder rate: ",rateFR);
 		SmartDashboard.putNumber("Back Right Encoder rate: ",rateBR);
-
+**/
 		double distanceFL = m_encoderFL.getDistance();
 		double distanceBL = m_encoderBL.getDistance();
 		double distanceFR = m_encoderFR.getDistance();
 		double distanceBR = m_encoderBR.getDistance();
 		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
+		/**
 		
 		SmartDashboard.putNumber("Front Left Encoder distance (in): ",distanceFL);
 		SmartDashboard.putNumber("Back Left Encoder distance (in): ",distanceBL);
 		SmartDashboard.putNumber("Front Right Encoder distance (in): ",distanceFR);
 		SmartDashboard.putNumber("Back Right Encoder distance (in): ",distanceBR);
 		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
-
+**/
 		if(GyroBut==1) {
 			m_gyro.reset();
 		}
@@ -257,63 +260,74 @@ public class Robot extends IterativeRobot {
 	        	rotation = (((Joy2.getRawAxis(1))-(Joy1.getRawAxis(1)))/2);
         		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
         		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
-        		DriveModeSwitch = (Joy1.getRawButton(3));
                 light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-				LidModeSwitch = false;
-				Climb.set((-(Joy1.getRawAxis(3))+1)/2);
+        		DriveModeSwitch = (Joy1.getRawButton(3));
+				//LidModeSwitch = false;
+				//Climb.set((-(Joy1.getRawAxis(3))+1)/2);
 	        	break;
 			 case 1://Single Joystick
 				rotation = (Joy1.getRawAxis(2));
 				driveX = (Joy1.getRawAxis(0));
 				driveY = (Joy1.getRawAxis(1));
-				DriveModeSwitch = (Joy1.getRawButton(3));
-				light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-				LidModeSwitch = false;
-				Climb.set((-(Joy1.getRawAxis(3))+1)/2);
+				//light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+
+				DriveModeSwitch = (Joy1.getRawButton(2));
+				//LidModeSwitch = false;
+				//Climb.set((-(Joy1.getRawAxis(3))+1)/2);
 			 	break;
 			 case 2://Xbox Controller
 		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
         		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
         		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
-        		DriveModeSwitch = (controller1.getRawButton(7));
         		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
                 //If the controller input is less than our threshold then make it equal to 0
-        		LidModeSwitch = (controller1.getRawButton(2));
-        		Climb.set(controller1.getRawAxis(3));
+        		DriveModeSwitch = (controller1.getRawButton(7));
+        		LidModeSwitch = (navController.getRawButton(2));
+        		Climb.set(navController.getRawAxis(3));
 		        break;
 		       
 		}
-		
+		Climb.set(navController.getRawAxis(3));
+		LidModeSwitch = (navController.getRawButton(2));
+ 		
 		switch(LidToggle){
 			case 0://GyroDrive is in use, waiting for button to be pressed
 				LidDouble.set(DoubleSolenoid.Value.kForward);
 				if(LidModeSwitch)//Waiting for button press
 					LidToggle = 1;
+				LidMode = "Up";
 				break;
 			case 1://Drive 2 selected, waiting for release
 				LidDouble.set(DoubleSolenoid.Value.kReverse);
 				if(!LidModeSwitch)//Waiting for button release
 					LidToggle = 2;
-				LidMode = "Up";
+				LidMode = "Down";
 				break;
 			case 2://Drive 2 selected, looking for pressed
 				LidDouble.set(DoubleSolenoid.Value.kReverse);
 				if(LidModeSwitch)//Waiting for button press
 					LidToggle = 3;
+				LidMode = "Down";
 				break;
 			case 3://GyroDrive is in use, looking for release
 				LidDouble.set(DoubleSolenoid.Value.kForward);
 				if(!LidModeSwitch)//Waiting for button release
 					LidToggle = 0;
-				LidMode = "Down";
+				LidMode = "Up";
 				break;
 		}
 		SmartDashboard.putString("Lid Status: ",LidMode );
         if(Math.abs(driveX)<0.1) driveX=0;
         if(Math.abs(driveY)<0.1) driveY=0;
-        if(Math.abs(rotation)<0.15) rotation=0;
-		rotation = .75*rotation;
-
+        if(Math.abs(rotation)<0.25) {
+        	rotation=0;
+        } else{
+        	if (rotation < 0 )
+            	rotation = rotation + 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
+        	else
+        		rotation = rotation - 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
+        }
+/**
 		switch(speedChooserSel){
 		// RiverTODO: Use Enum for ControllerChooser values in speedChooserSel cases (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	        case 0:
@@ -327,7 +341,7 @@ public class Robot extends IterativeRobot {
 	        	break;
 			default:
 	        	speedMultiplier = 1;
-		}
+		} **/
         driveX = driveX * speedMultiplier; 
 		SmartDashboard.putNumber("Drive X value",driveX);
 		SmartDashboard.putNumber("Gyro value",m_gyro.getAngle());
