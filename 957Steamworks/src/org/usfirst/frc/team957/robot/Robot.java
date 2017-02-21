@@ -52,7 +52,7 @@ public class Robot extends IterativeRobot {
 	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
 	int DriveToggle; 
 	int LidToggle; 
-	double rotation;yhj
+	double rotation;
 	double driveX;
 	double driveY;
 	boolean m_storedValueTF;
