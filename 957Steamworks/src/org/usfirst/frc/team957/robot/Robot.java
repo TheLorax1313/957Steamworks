@@ -91,8 +91,8 @@ public class Robot extends IterativeRobot {
 		autoChooser.addDefault("Do Nothing", m_DoNothing);
 		autoChooser.addObject("Cross the Line", m_CrosstheLine);
 		autoChooser.addObject("Turn Right", m_TurnRight);
-		autoChooser.addObject("Cross the Line", m_TurnLeft);
-		autoChooser.addObject("Cross the Line", m_Forward);
+		autoChooser.addObject("Turn Left", m_TurnLeft);
+		autoChooser.addObject("Turn Right", m_Forward);
 		SmartDashboard.putData("Auto choices", autoChooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
