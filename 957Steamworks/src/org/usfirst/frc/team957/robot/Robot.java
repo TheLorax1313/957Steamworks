@@ -29,7 +29,6 @@ public class Robot extends IterativeRobot {
 	final int m_TurnRight = 2;
 	final int m_TurnLeft = 3;
 	final int m_Forward = 4;
-	// RiverTODO: Add autoState integer variable to track the state we're in for all auto modes. 
 	int m_autoState;
 	int autoSelected;
 	SendableChooser<Integer> autoChooser = new SendableChooser<>();
@@ -59,7 +58,6 @@ public class Robot extends IterativeRobot {
 	int m_ramp = 24;
 	boolean m_storedValueTF;
 	boolean m_autoTurnRight;
-	boolean m_autoTurnLeft;
 	boolean m_NeedEncoderReset;
 	int autoCase;
 	int m_storedAngle;
@@ -74,9 +72,7 @@ public class Robot extends IterativeRobot {
 	Command ControllerCommand;
 	int selectedValue;
 	SendableChooser<Integer> ControllerChooser;
-	// RiverTODO: Add Enum for ControllerChooser values  (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	SendableChooser<Integer> SpeedChooser;
-	// RiverTODO: Add Enum for SpeedChooser values  (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	SendableChooser<Integer> gyroReset;
 	int speedChooserSel; 
 	int GyroBut;
@@ -166,18 +162,13 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		autoSelected = (int) autoChooser.getSelected();
 		switch (autoSelected) {
-		case 0:	// RiverTODO: Rename to correct name
+		case 0://Do Nothing
 			default:
-			// Put default auto code here
-			
 			break;
-		case 1:
-			// Put custom auto code here
-			
+		case 1://Cross the line
 			driveForDistance(80,0.5,true);
 			break;
-		case 2:
-			// Put custom auto code here
+		case 2://Turn Right
 			m_autoTurnRight=true;
 			switch (autoCase){
 				case 0:
@@ -193,9 +184,8 @@ public class Robot extends IterativeRobot {
 				}			
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
-		case 3:
-			// Put custom auto code here
-			m_autoTurnLeft=true;
+		case 3://Turn Left
+			m_autoTurnRight=false;
 			switch (autoCase){
 				case 0:
 					if(driveForDistance(50,0.5,true)) 
@@ -211,8 +201,7 @@ public class Robot extends IterativeRobot {
 
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
-		case 4:
-			// Put custom auto code here
+		case 4://Drive forward
 			driveForDistance(80,0.5,true);
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
@@ -231,7 +220,7 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void teleopPeriodic() {
 		JoyToggle = (int) ControllerChooser.getSelected();
-		speedChooserSel = (int) SpeedChooser.getSelected();		// RiverTODO: rename variable to something like selectedSpeed
+		speedChooserSel = (int) SpeedChooser.getSelected();
 		GyroBut = (int) gyroReset.getSelected();
 		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
 		SmartDashboard.putNumber("Gyro Reset value",GyroBut);
@@ -275,7 +264,6 @@ public class Robot extends IterativeRobot {
 		}
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(JoyToggle){
-		// RiverTODO: Use Enum for ControllerChooser values in JoyToggle cases (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
 	        case 0://Dual Joystick tank
 	        	rotation = (((Joy2.getRawAxis(1))-(Joy1.getRawAxis(1)))/2);
         		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
@@ -462,50 +450,21 @@ public class Robot extends IterativeRobot {
 		if (m_storedValueTF=false){
 			m_storedAngle=(int) m_gyro.getAngle();
 		}
-		if (m_autoTurnRight=true){
-			if (m_gyro.getAngle() < m_storedAngle + Turn){
-			}
+		if (m_autoTurnRight){
 			if (m_gyro.getAngle() > m_storedAngle + Turn){
 			m_storedValueTF=false;
-			m_autoTurnRight=false;
 			retVal=true;
 			}
-			}
-		if (m_autoTurnLeft=true){
-			if (m_gyro.getAngle() > m_storedAngle - Turn){
 		}
+		if (!m_autoTurnRight){
 			if (m_gyro.getAngle() < m_storedAngle - Turn){
 			m_storedValueTF=false;
-			m_autoTurnLeft=false;
 			retVal=true;
-		}
+			TurnPower=-TurnPower;
+			}
 		}
 		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
 		return retVal;
 	}
-	// RiverTODO: Add "resetEncoders" method to reset encoder counts to 0 when needed. 
-	
-	// RiverTODO: Add "driveForDistance" method that accepts a distance and a max power value and returns boolean completed value. 
-		// Eventually it would be good to have this method allow for driving backwards too. 
-		// Switch statement based on distance traveled
-		// If encoder average distance is less than 6 (inches) motors @ 1/4 max power value. return false.
-		// distance > 6" & distance < 12" go 1/2 max power value. return false.
-		// distance > 12" & < input distance - 12" full max power value.  return false.
-		// distance > input distance - 12" & distance < input distance - 6" go 1/2 max power value. return false.
-		// distance > input distance - 6" motors @ 1/4 max power value. return false.
-		// distance > input distance stop return true.
-
-	// RiverTODO: Add "turnXDegrees" method to accept an angle, boolean direction (ie: turnRight) and max power value and turn to that angle. 
-	// need a member variable to track original heading value (double) and a boolean flag to indicate if heading has been saved. 
-		// save original heading if it has not been saved and set flag. 
-		// Switch statement based on turn direction
-		// Right: current heading < original + desired,  rotate right, return false
-			// If current heading > original + desired, stop, clear flag and return true
-		// Left: current heading > original - desired,  rotate left, return false 
-			// If current heading < original - desired, stop, clear flag and return true
-		// For now I would ignore ramping because it will be a lot more tricky than driving forward or back.
-		// 
-	
-
 }
 
