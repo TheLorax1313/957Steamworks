@@ -54,12 +54,12 @@ public class Robot extends IterativeRobot {
 	double rotation;
 	double driveX;
 	double driveY;
-	int m_startStop = 12;
-	int m_ramp = 24;
+	int m_startStop = 6;
+	int m_ramp = 12;
 	boolean m_storedValueTF;
 	boolean m_autoTurnRight;
 	boolean m_NeedEncoderReset;
-	int autoCase;
+	int autoCase=0;
 	int m_storedAngle;
 	int JoyToggle;
 	double ContChooseDual;
@@ -150,6 +150,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
+		autoCase=0;
+		m_storedValueTF=false;
 		m_NeedEncoderReset=true;
 		m_gyro.reset();
 		System.out.println("Auto selected: " + autoSelected);
@@ -172,15 +174,15 @@ public class Robot extends IterativeRobot {
 			m_autoTurnRight=true;
 			switch (autoCase){
 				case 0:
-					if(driveForDistance(50,0.5,true)) 
+					if(driveForDistance(75,0.5,true)) 
 					autoCase=1;
+					break;
 				case 1:
-					if(turnXDegrees(45,0.5)){
-					autoCase=2;
+					if(turnXDegrees(45,0.3)){
 					m_NeedEncoderReset=true;
+					autoCase=2;
 					}
-				case 2:
-					driveForDistance(30,0.5,false);
+					break;
 				}			
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
@@ -188,15 +190,15 @@ public class Robot extends IterativeRobot {
 			m_autoTurnRight=false;
 			switch (autoCase){
 				case 0:
-					if(driveForDistance(50,0.5,true)) 
+					if(driveForDistance(75,0.5,true)) 
 					autoCase=1;
+					break;
 				case 1:
-					if(turnXDegrees(45,0.5)){
-					autoCase=2;
+					if(turnXDegrees(45,0.3)){
 					m_NeedEncoderReset=true;
+					autoCase=2;
 					}
-				case 2:
-					driveForDistance(30,0.5,false);
+					break;
 				}			
 
 						// 6: Add placeholder comment for Caleb's vision tracking
@@ -415,7 +417,7 @@ public class Robot extends IterativeRobot {
 		}
 
 		if (avgDistance < m_startStop){
-			MaxPower= MaxPower*0.5;
+ 			MaxPower= MaxPower*0.5;
 			retVal=false;
 		}
 
@@ -449,6 +451,7 @@ public class Robot extends IterativeRobot {
 		boolean retVal=false;
 		if (m_storedValueTF=false){
 			m_storedAngle=(int) m_gyro.getAngle();
+			m_storedValueTF=true;
 		}
 		if (m_autoTurnRight){
 			if (m_gyro.getAngle() > m_storedAngle + Turn){
@@ -457,10 +460,10 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		if (!m_autoTurnRight){
+			TurnPower=-TurnPower;
 			if (m_gyro.getAngle() < m_storedAngle - Turn){
 			m_storedValueTF=false;
 			retVal=true;
-			TurnPower=-TurnPower;
 			}
 		}
 		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
