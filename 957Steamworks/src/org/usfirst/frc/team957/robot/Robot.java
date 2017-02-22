@@ -55,9 +55,12 @@ public class Robot extends IterativeRobot {
 	double rotation;
 	double driveX;
 	double driveY;
+	int m_startStop = 12;
+	int m_ramp = 24;
 	boolean m_storedValueTF;
 	boolean m_autoTurnRight;
 	boolean m_autoTurnLeft;
+	boolean m_NeedEncoderReset;
 	int autoCase;
 	int m_storedAngle;
 	int JoyToggle;
@@ -92,7 +95,7 @@ public class Robot extends IterativeRobot {
 		autoChooser.addObject("Cross the Line", m_CrosstheLine);
 		autoChooser.addObject("Turn Right", m_TurnRight);
 		autoChooser.addObject("Turn Left", m_TurnLeft);
-		autoChooser.addObject("Turn Right", m_Forward);
+		autoChooser.addObject("Forward", m_Forward);
 		SmartDashboard.putData("Auto choices", autoChooser);
 		speedSwitch = 1;
 		DriveToggle = 0;
@@ -127,6 +130,7 @@ public class Robot extends IterativeRobot {
         m_encoderFR.reset();
         m_encoderBR.reset();
         m_storedValueTF=false;
+        m_NeedEncoderReset=false;
         // Our encoders are 360 Cycles Per Revolution and 1440 Pulses Per Revolution
         // For the gearbox, we are using an 8.46 to 1 gear ratio. This doesn't matter since we're measuring the output shaft. 
         // Calculation is 2*pi*Radius(our wheels are 6") / Cycles Per Revolution.
@@ -150,6 +154,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
+		m_NeedEncoderReset=true;
 		m_gyro.reset();
 		System.out.println("Auto selected: " + autoSelected);
 	}
@@ -159,6 +164,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		autoSelected = (int) autoChooser.getSelected();
 		switch (autoSelected) {
 		case 0:	// RiverTODO: Rename to correct name
 			default:
@@ -167,20 +173,21 @@ public class Robot extends IterativeRobot {
 			break;
 		case 1:
 			// Put custom auto code here
-			resetEncoders();
+			
 			driveForDistance(80,0.5,true);
 			break;
 		case 2:
 			// Put custom auto code here
-			resetEncoders();
 			m_autoTurnRight=true;
 			switch (autoCase){
 				case 0:
 					if(driveForDistance(50,0.5,true)) 
 					autoCase=1;
 				case 1:
-					if(turnXDegrees(45,0.5))
+					if(turnXDegrees(45,0.5)){
 					autoCase=2;
+					m_NeedEncoderReset=true;
+					}
 				case 2:
 					driveForDistance(30,0.5,false);
 				}			
@@ -188,15 +195,16 @@ public class Robot extends IterativeRobot {
 			break;
 		case 3:
 			// Put custom auto code here
-			resetEncoders();
 			m_autoTurnLeft=true;
 			switch (autoCase){
 				case 0:
 					if(driveForDistance(50,0.5,true)) 
 					autoCase=1;
 				case 1:
-					if(turnXDegrees(45,0.5))
+					if(turnXDegrees(45,0.5)){
 					autoCase=2;
+					m_NeedEncoderReset=true;
+					}
 				case 2:
 					driveForDistance(30,0.5,false);
 				}			
@@ -205,7 +213,6 @@ public class Robot extends IterativeRobot {
 			break;
 		case 4:
 			// Put custom auto code here
-			resetEncoders();
 			driveForDistance(80,0.5,true);
 						// 6: Add placeholder comment for Caleb's vision tracking
 			break;
@@ -413,28 +420,31 @@ public class Robot extends IterativeRobot {
 		double distanceFR = m_encoderFR.getDistance();
 		double distanceBR = m_encoderBR.getDistance();
 		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
-		if (avgDistance > 6 && avgDistance < 12){
-			MaxPower= MaxPower/4;
+		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
+		if (m_NeedEncoderReset){
+			resetEncoders();
+			m_NeedEncoderReset=false;
+		}
+
+		if (avgDistance < m_startStop){
+			MaxPower= MaxPower*0.5;
 			retVal=false;
 		}
-		if (avgDistance < 6){
-			MaxPower= 0.25;
+
+		if (avgDistance > m_startStop && avgDistance < m_ramp){
+			MaxPower= MaxPower*0.75;
 			retVal=false;
 		}
-		if (avgDistance > 6 && avgDistance < 12){
-			MaxPower= 0.5;
+		
+		if (avgDistance > m_ramp && avgDistance < Distance - 2*m_ramp){
 			retVal=false;
 		}
-		if (avgDistance > 6 && avgDistance < 12){
-			MaxPower= 1;
+		if (avgDistance > Distance - 2*m_ramp && avgDistance < Distance - 2*m_startStop){
+			MaxPower= MaxPower*0.5;
 			retVal=false;
 		}
-		if (avgDistance > 12 && avgDistance < Distance - 12){
-			MaxPower= 0.5;
-			retVal=false;
-		}
-		if (avgDistance > Distance - 6){
-			MaxPower= 0.25;
+		if (avgDistance > Distance - 2*m_startStop){
+			MaxPower= MaxPower*0.25;
 			retVal=false;
 		}
 		if (avgDistance > Distance){
@@ -442,9 +452,9 @@ public class Robot extends IterativeRobot {
 			retVal=true;
 		}
 		if (UseGyro)
-			m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,m_gyro.getAngle());
+			m_Drive.mecanumDrive_Cartesian(0,-MaxPower,0,m_gyro.getAngle());
 		else
-			m_Drive.mecanumDrive_Cartesian(0,MaxPower,0,0);
+			m_Drive.mecanumDrive_Cartesian(0,-MaxPower,0,0);
 		return retVal;
 	}
 	public boolean turnXDegrees(int Turn,double TurnPower){
