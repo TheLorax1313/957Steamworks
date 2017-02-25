@@ -57,6 +57,7 @@ public class Robot extends IterativeRobot {
 	double m_rotation;
 	double m_driveX;
 	double m_driveY;
+	double m_POVFinal;
 	int m_startStop = 6;
 	int m_ramp = 12;
 	boolean m_storedValueTF;
@@ -80,6 +81,7 @@ public class Robot extends IterativeRobot {
 	String m_LidMode;
 	DoubleSolenoid m_LidDouble = new DoubleSolenoid(1, 0, 1);
 	Boolean m_ShowInstrumentation = false; 
+	AutonomusFinder Auto = new AutonomusFinder();
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -161,6 +163,15 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void autonomousPeriodic() {
 		m_autoSelected = m_AutoChooser.getSelected();
+		m_LightsRelay.set(Relay.Value.kForward);
+		double distanceFL = m_encoderFL.getDistance();
+		double distanceBL = m_encoderBL.getDistance();
+		double distanceFR = m_encoderFR.getDistance();
+		double distanceBR = m_encoderBR.getDistance();
+		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
+		Auto.AutoDetect();
+		double XFinal = Auto.acceptedXFinal();
+		double YFinal = Auto.acceptedYFinal();
 		switch (m_autoSelected) {
 		case 0://Do Nothing
 			default:
@@ -181,8 +192,18 @@ public class Robot extends IterativeRobot {
 						m_autoCase=2;
 					}
 					break;
+				case 2:
+					resetEncoders();
+					m_autoCase = 3;
+					break;
+				case 3:
+					if(avgDistance <= 20){
+						AutoDrive(0.25,XFinal);
+					}else{
+						AutoDrive(0,0);
+					}
+				break;
 				}			
-				// Placeholder comment for Caleb's vision tracking
 			break;
 		case 3://Turn Left
 			m_autoTurnRight=false;
@@ -197,12 +218,25 @@ public class Robot extends IterativeRobot {
 						m_autoCase=2;
 					}
 					break;
+				case 2:
+					resetEncoders();
+					m_autoCase = 3;
+					break;
+				case 3:
+					if(avgDistance <= 20){
+						AutoDrive(0.25,XFinal);
+					}else{
+						AutoDrive(0,0);
+					}
+				break;
 				}			
-				// Placeholder comment for Caleb's vision tracking
 			break;
 		case 4://Drive forward
-			driveForDistance(80,0.5,true);
-			// Placeholder comment for Caleb's vision tracking
+			if(avgDistance <= 80){
+				AutoDrive(0.25,XFinal);
+			}else{
+				AutoDrive(0,0);
+			}
 			break;
 		}
 	}
@@ -233,22 +267,32 @@ public class Robot extends IterativeRobot {
         		m_driveX = (((m_Joy1.getRawAxis(0))+(m_Joy2.getRawAxis(0)))/2);
         		m_driveY = (((m_Joy1.getRawAxis(1))+(m_Joy2.getRawAxis(1)))/2);
         		m_DriveModeSwitch = (m_Joy1.getRawButton(3));
+        		m_POVFinal = m_Joy1.getPOV();
 	        	break;
 			 case 1://Single Joystick
 				m_rotation = (m_Joy1.getRawAxis(2));
 				m_driveX = (m_Joy1.getRawAxis(0));
 				m_driveY = (m_Joy1.getRawAxis(1));
 				m_DriveModeSwitch = (m_Joy1.getRawButton(2));
+				m_POVFinal = m_Joy1.getPOV();
 			 	break;
 			 case 2://Xbox Controller
 		        m_rotation = (((m_DriveController.getRawAxis(5))-(m_DriveController.getRawAxis(1)))/2);
         		m_driveX = (((m_DriveController.getRawAxis(0))+(m_DriveController.getRawAxis(4)))/2);
         		m_driveY = (((m_DriveController.getRawAxis(1))+(m_DriveController.getRawAxis(5)))/2);
                 //If the controller input is less than our threshold then make it equal to 0
+        		m_POVFinal = m_DriveController.getPOV();
         		m_DriveModeSwitch = (m_DriveController.getRawButton(7));
 		        break;
 		}
 		
+        if(m_POVFinal == 45 || m_POVFinal == 225){
+        	m_POVFinal = m_POVFinal + 45;
+        
+        }
+        if(m_POVFinal == 135 || m_POVFinal == 315){
+        	m_POVFinal = m_POVFinal - 45;
+        }
 		m_Climb.set(m_NavController.getRawAxis(3));
 		m_LidModeSwitch = (m_NavController.getRawButton(2));
  		
@@ -289,12 +333,25 @@ public class Robot extends IterativeRobot {
         	else
         		m_rotation = m_rotation - 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
         }
-        // Allow for speed multiplier to control maximum speed. 
-        m_driveX = m_driveX * m_speedMultiplier; 
-        m_driveY = m_driveY * m_speedMultiplier; 
-        m_rotation = m_rotation * m_speedMultiplier; 	
         
-		if(m_ShowInstrumentation){
+        if(m_POVFinal == -1){
+	        // Allow for speed multiplier to control maximum speed. 
+	        m_driveX = m_driveX * m_speedMultiplier; 
+	        m_driveY = m_driveY * m_speedMultiplier; 
+	        m_rotation = m_rotation * m_speedMultiplier; 	
+	 	}else{
+	 		m_driveY = 0;
+	 		 //left
+	        if(m_POVFinal == 90){
+	        	m_driveX = m_speedMultiplier; 
+	        }	
+	        //right
+	        if(m_POVFinal == 270){
+	        	m_driveX = -m_speedMultiplier; 
+	        }   
+	    }
+
+        if(m_ShowInstrumentation){
 			SmartDashboard.putNumber("Joy Toggle value",m_JoyToggle);
 
 			int countFL = m_encoderFL.get();
@@ -362,6 +419,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Gyro value",roundedGyro);
 		SmartDashboard.putString("Lid Status",m_LidMode );
 		SmartDashboard.putString("Drive mode",m_DriveMode );
+		SmartDashboard.putString("CameraURL","http://raspberrypi.local:1183/stream.mjpg" );
 	}	
 
 	/**
@@ -445,6 +503,22 @@ public class Robot extends IterativeRobot {
 		}
 		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
 		return retVal;
+	}
+	public void AutoDrive(double speed, double XFinal){
+		
+		if(!(XFinal == -666)){
+			if(XFinal < 5 && XFinal > -5){
+				m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);
+			}else{
+				if(XFinal < 0){
+					m_Drive.mecanumDrive_Cartesian((-speed*1.5),0,0,0);
+				}else{
+					m_Drive.mecanumDrive_Cartesian((speed*1.5),0,0,0);
+				}				
+			}
+		}else{
+			m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);		
+		}
 	}
 }
 
