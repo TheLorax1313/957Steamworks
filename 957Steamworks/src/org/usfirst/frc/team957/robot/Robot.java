@@ -30,111 +30,110 @@ public class Robot extends IterativeRobot {
 	final int m_TurnLeft = 3;
 	final int m_Forward = 4;
 	int m_autoState;
-	int autoSelected;
-	SendableChooser<Integer> autoChooser = new SendableChooser<>();
+	int m_autoSelected;
+	SendableChooser<Integer> m_AutoChooser;
+	SendableChooser<Integer> m_ControllerChooser;
+	SendableChooser<Boolean> m_GyroResetChooser;
+	SendableChooser<Boolean> m_DisplayDataChooser;
 	//Joystick Defining
-	Joystick Joy1 = new Joystick(1); //flight stick 1
-	Joystick Joy2 = new Joystick(2); //flight stick 2
-	Joystick controller1 = new Joystick(0); //controller
-	Joystick navController = new Joystick(3); //controller
-	CANTalon fl = new CANTalon(2);
-	CANTalon bl = new CANTalon(3);
-	CANTalon fr = new CANTalon(4);
-	CANTalon br = new CANTalon(5);
-	Spark Climb = new Spark(0);
+	Joystick m_Joy1 = new Joystick(1); //flight stick 1
+	Joystick m_Joy2 = new Joystick(2); //flight stick 2
+	Joystick m_DriveController = new Joystick(0); //controller
+	Joystick m_NavController = new Joystick(3); //controller
+	CANTalon m_fl = new CANTalon(2);
+	CANTalon m_bl = new CANTalon(3);
+	CANTalon m_fr = new CANTalon(4);
+	CANTalon m_br = new CANTalon(5);
+	Spark m_Climb = new Spark(0);
 	// We want to use 1X encoding. We would use 4X if we pull back to the Talons. 
     Encoder m_encoderFL = new Encoder(0, 1, false, Encoder.EncodingType.k1X);
     Encoder m_encoderBL = new Encoder(2, 3, false, Encoder.EncodingType.k1X);
     Encoder m_encoderFR = new Encoder(4, 5, true , Encoder.EncodingType.k1X);	// Right motors are reversed. 
     Encoder m_encoderBR = new Encoder(6, 7, true, Encoder.EncodingType.k1X);	// Right motors are reversed. 
-	int speedSwitch;
-	RobotDrive m_Drive = new RobotDrive(fl, bl, fr, br);
-	int DriveToggle; 
-	int LidToggle; 
-	double rotation;
-	double driveX;
-	double driveY;
+	int m_speedSwitch;
+	RobotDrive m_Drive = new RobotDrive(m_fl, m_bl, m_fr, m_br);
+	int m_DriveToggle; 
+	int m_LidToggle; 
+	double m_rotation;
+	double m_driveX;
+	double m_driveY;
 	int m_startStop = 6;
 	int m_ramp = 12;
 	boolean m_storedValueTF;
 	boolean m_autoTurnRight;
 	boolean m_NeedEncoderReset;
-	int autoCase=0;
+	int m_autoCase=0;
 	int m_storedAngle;
-	int JoyToggle;
-	double ContChooseDual;
-	double ContChooseSingle;
-	double ContChoose360;
-	Relay Lights;
-	Boolean DriveModeSwitch;
-	Boolean LidModeSwitch;
+	int m_JoyToggle;
+	double m_ContChooseDual;
+	double m_ContChooseSingle;
+	double m_ContChoose360;
+	Relay m_LightsRelay;
+	Boolean m_DriveModeSwitch;
+	Boolean m_LidModeSwitch;
 	ADXRS450_Gyro m_gyro = new ADXRS450_Gyro();
-	Command ControllerCommand;
-	int selectedValue;
-	SendableChooser<Integer> ControllerChooser;
-	SendableChooser<Integer> SpeedChooser;
-	SendableChooser<Integer> gyroReset;
-	int speedChooserSel; 
-	int GyroBut;
-	double speedMultiplier;
-	String DriveMode;
-	String LidMode;
-	DoubleSolenoid LidDouble = new DoubleSolenoid(1, 0, 1);
+	Command m_ControllerCommand;
+	int m_selectedValue;
+	Boolean m_ResetGyro;
+	double m_speedMultiplier;
+	String m_DriveMode;
+	String m_LidMode;
+	DoubleSolenoid m_LidDouble = new DoubleSolenoid(1, 0, 1);
+	Boolean m_ShowInstrumentation = false; 
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
-		autoChooser = new SendableChooser<Integer>();
-		autoChooser.addDefault("Do Nothing", m_DoNothing);
-		autoChooser.addObject("Cross the Line", m_CrosstheLine);
-		autoChooser.addObject("Turn Right", m_TurnRight);
-		autoChooser.addObject("Turn Left", m_TurnLeft);
-		autoChooser.addObject("Forward", m_Forward);
-		SmartDashboard.putData("Auto choices", autoChooser);
-		speedSwitch = 1;
-		DriveToggle = 0;
-		LidToggle = 0;
-		DriveMode = "Field Oriented";
-		LidMode = "Down";
-		JoyToggle = 0;
-		ControllerChooser = new SendableChooser<Integer>();
-		ControllerChooser.addDefault("Dual JoySticks",0);
-		ControllerChooser.addObject("Single JoySticks",1);
-		ControllerChooser.addObject("360 Controller",2);		
-		SmartDashboard.putData("Controller Chooser",ControllerChooser);
+		
+		m_DisplayDataChooser = new SendableChooser<Boolean>();
+		m_DisplayDataChooser.addDefault("Hide", false);
+		m_DisplayDataChooser.addObject("Show", true);
+		SmartDashboard.putData("Instrumentation", m_DisplayDataChooser);
+		
+		m_AutoChooser = new SendableChooser<Integer>();
+		m_AutoChooser.addDefault("Do Nothing", m_DoNothing);
+		m_AutoChooser.addObject("Cross the Line", m_CrosstheLine);
+		m_AutoChooser.addObject("Turn Right", m_TurnRight);
+		m_AutoChooser.addObject("Turn Left", m_TurnLeft);
+		m_AutoChooser.addObject("Forward", m_Forward);
+		SmartDashboard.putData("Auto choices", m_AutoChooser);
 
-		SpeedChooser = new SendableChooser<Integer>();
-		SpeedChooser.addDefault("Full Speed",0);
-		SpeedChooser.addObject("Half Speed",1);
-		SpeedChooser.addObject("Quarter Speed",2);
-		SmartDashboard.putData("Speed Chooser",SpeedChooser);
-		gyroReset = new SendableChooser<Integer>();
-		gyroReset.addDefault("waiting",0);
-		gyroReset.addObject("Reset",1);
-		SmartDashboard.putData("Gyro Reset",gyroReset);
-		Lights = new Relay (0);
-		Lights.setDirection(Relay.Direction.kForward);
+		m_ControllerChooser = new SendableChooser<Integer>();
+		m_ControllerChooser.addDefault("Dual JoySticks",0);
+		m_ControllerChooser.addObject("Single JoySticks",1);
+		m_ControllerChooser.addObject("360 Controller",2);		
+		SmartDashboard.putData("Controller Chooser",m_ControllerChooser);
+
+		m_GyroResetChooser = new SendableChooser<Boolean>();
+		m_GyroResetChooser.addDefault("waiting",false);
+		m_GyroResetChooser.addObject("Reset",true);
+		SmartDashboard.putData("Gyro Reset",m_GyroResetChooser);
+		
+		m_speedSwitch = 1;
+		m_DriveToggle = 0;
+		m_LidToggle = 0;
+		m_LidMode = "Up";
+		m_DriveMode = "Field Oriented";
+		m_JoyToggle = 0;
+		m_LightsRelay = new Relay(0);
+		m_LightsRelay.setDirection(Relay.Direction.kForward);
 		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
         m_Drive.setInvertedMotor(MotorType.kRearRight, true);
+        m_Drive.setSafetyEnabled(false);
         m_gyro.calibrate();
-        speedMultiplier = 1;
-        // Reset encoders
-        m_encoderFL.reset();
-        m_encoderBL.reset();
-        m_encoderFR.reset();
-        m_encoderBR.reset();
-        m_storedValueTF=false;
+        m_speedMultiplier = 1; // Speed multiplier used to control maximum output values. 1 = full power.
+        m_storedValueTF=false; // Used by turnXDegrees to indicate if the original gyro heading needs to be stored.
         m_NeedEncoderReset=false;
         // Our encoders are 360 Cycles Per Revolution and 1440 Pulses Per Revolution
         // For the gearbox, we are using an 8.46 to 1 gear ratio. This doesn't matter since we're measuring the output shaft. 
         // Calculation is 2*pi*Radius(our wheels are 6") / Cycles Per Revolution.
-        // 
         m_encoderFL.setDistancePerPulse(Math.PI*6/360);
         m_encoderBL.setDistancePerPulse(Math.PI*6/360);
         m_encoderFR.setDistancePerPulse(Math.PI*6/360);
         m_encoderBR.setDistancePerPulse(Math.PI*6/360);
+        resetEncoders();
 	}
 
 	/**
@@ -150,11 +149,10 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousInit() {
-		autoCase=0;
+		m_autoCase=0;
 		m_storedValueTF=false;
 		m_NeedEncoderReset=true;
 		m_gyro.reset();
-		System.out.println("Auto selected: " + autoSelected);
 	}
 
 	/**
@@ -162,8 +160,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		autoSelected = (int) autoChooser.getSelected();
-		switch (autoSelected) {
+		m_autoSelected = m_AutoChooser.getSelected();
+		switch (m_autoSelected) {
 		case 0://Do Nothing
 			default:
 			break;
@@ -172,47 +170,45 @@ public class Robot extends IterativeRobot {
 			break;
 		case 2://Turn Right
 			m_autoTurnRight=true;
-			switch (autoCase){
+			switch (m_autoCase){
 				case 0:
 					if(driveForDistance(75,0.5,true)) 
-					autoCase=1;
+						m_autoCase=1;
 					break;
 				case 1:
 					if(turnXDegrees(45,0.3)){
-					m_NeedEncoderReset=true;
-					autoCase=2;
+						m_NeedEncoderReset=true;
+						m_autoCase=2;
 					}
 					break;
 				}			
-						// 6: Add placeholder comment for Caleb's vision tracking
+				// Placeholder comment for Caleb's vision tracking
 			break;
 		case 3://Turn Left
 			m_autoTurnRight=false;
-			switch (autoCase){
+			switch (m_autoCase){
 				case 0:
 					if(driveForDistance(75,0.5,true)) 
-					autoCase=1;
+						m_autoCase=1;
 					break;
 				case 1:
 					if(turnXDegrees(45,0.3)){
-					m_NeedEncoderReset=true;
-					autoCase=2;
+						m_NeedEncoderReset=true;
+						m_autoCase=2;
 					}
 					break;
 				}			
-
-						// 6: Add placeholder comment for Caleb's vision tracking
+				// Placeholder comment for Caleb's vision tracking
 			break;
 		case 4://Drive forward
 			driveForDistance(80,0.5,true);
-						// 6: Add placeholder comment for Caleb's vision tracking
+			// Placeholder comment for Caleb's vision tracking
 			break;
 		}
 	}
 
 	@Override
 	public void teleopInit() {
-		//System.out.println("Auto selected: " + autoSelected);
 	}
 	
 	
@@ -221,173 +217,151 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		JoyToggle = (int) ControllerChooser.getSelected();
-		speedChooserSel = (int) SpeedChooser.getSelected();
-		GyroBut = (int) gyroReset.getSelected();
-		SmartDashboard.putNumber("Joy Toggle value",JoyToggle);
-		SmartDashboard.putNumber("Gyro Reset value",GyroBut);
+		m_ShowInstrumentation = m_DisplayDataChooser.getSelected();
+		m_JoyToggle = m_ControllerChooser.getSelected();
+		m_ResetGyro = m_GyroResetChooser.getSelected();
 		Relay.Value light=Relay.Value.kOff;
-		int countFL = m_encoderFL.get();
-		int countBL = m_encoderBL.get();
-		int countFR = m_encoderFR.get();
-		int countBR = m_encoderBR.get();
-		/**
-		SmartDashboard.putNumber("Front Left Encoder count: ",countFL);
-		SmartDashboard.putNumber("Back Left Encoder count: ",countBL);
-		SmartDashboard.putNumber("Front Right Encoder count: ",countFR);
-		SmartDashboard.putNumber("Back Right Encoder count: ",countBR);
-**/
-		double rateFL = m_encoderFL.getRate();
-		double rateBL = m_encoderBL.getRate();
-		double rateFR = m_encoderFR.getRate();
-		double rateBR = m_encoderBR.getRate();
-		/**
-		
-		SmartDashboard.putNumber("Front Left Encoder rate: ",rateFL);
-		SmartDashboard.putNumber("Back Left Encoder rate: ",rateBL);
-		SmartDashboard.putNumber("Front Right Encoder rate: ",rateFR);
-		SmartDashboard.putNumber("Back Right Encoder rate: ",rateBR);
-**/
-		double distanceFL = m_encoderFL.getDistance();
-		double distanceBL = m_encoderBL.getDistance();
-		double distanceFR = m_encoderFR.getDistance();
-		double distanceBR = m_encoderBR.getDistance();
-		double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
-		/**
-		
-		SmartDashboard.putNumber("Front Left Encoder distance (in): ",distanceFL);
-		SmartDashboard.putNumber("Back Left Encoder distance (in): ",distanceBL);
-		SmartDashboard.putNumber("Front Right Encoder distance (in): ",distanceFR);
-		SmartDashboard.putNumber("Back Right Encoder distance (in): ",distanceBR);
-		SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
-**/
-		if(GyroBut==1) {
+
+		if(m_ResetGyro) {
 			m_gyro.reset();
 		}
+		
 		//Drive Code for each controller type selected by Java Dashboard
-		switch(JoyToggle){
+		switch(m_JoyToggle){
 	        case 0://Dual Joystick tank
-	        	rotation = (((Joy2.getRawAxis(1))-(Joy1.getRawAxis(1)))/2);
-        		driveX = (((Joy1.getRawAxis(0))+(Joy2.getRawAxis(0)))/2);
-        		driveY = (((Joy1.getRawAxis(1))+(Joy2.getRawAxis(1)))/2);
-                light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-        		DriveModeSwitch = (Joy1.getRawButton(3));
-				//LidModeSwitch = false;
-				//Climb.set((-(Joy1.getRawAxis(3))+1)/2);
+	        	m_rotation = (((m_Joy2.getRawAxis(1))-(m_Joy1.getRawAxis(1)))/2);
+        		m_driveX = (((m_Joy1.getRawAxis(0))+(m_Joy2.getRawAxis(0)))/2);
+        		m_driveY = (((m_Joy1.getRawAxis(1))+(m_Joy2.getRawAxis(1)))/2);
+        		m_DriveModeSwitch = (m_Joy1.getRawButton(3));
 	        	break;
 			 case 1://Single Joystick
-				rotation = (Joy1.getRawAxis(2));
-				driveX = (Joy1.getRawAxis(0));
-				driveY = (Joy1.getRawAxis(1));
-				//light=(Joy1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
-
-				DriveModeSwitch = (Joy1.getRawButton(2));
-				//LidModeSwitch = false;
-				//Climb.set((-(Joy1.getRawAxis(3))+1)/2);
+				m_rotation = (m_Joy1.getRawAxis(2));
+				m_driveX = (m_Joy1.getRawAxis(0));
+				m_driveY = (m_Joy1.getRawAxis(1));
+				m_DriveModeSwitch = (m_Joy1.getRawButton(2));
 			 	break;
 			 case 2://Xbox Controller
-		        rotation = (((controller1.getRawAxis(5))-(controller1.getRawAxis(1)))/2);
-        		driveX = (((controller1.getRawAxis(0))+(controller1.getRawAxis(4)))/2);
-        		driveY = (((controller1.getRawAxis(1))+(controller1.getRawAxis(5)))/2);
-        		light=(controller1.getRawButton(1))?Relay.Value.kOn:Relay.Value.kOff;
+		        m_rotation = (((m_DriveController.getRawAxis(5))-(m_DriveController.getRawAxis(1)))/2);
+        		m_driveX = (((m_DriveController.getRawAxis(0))+(m_DriveController.getRawAxis(4)))/2);
+        		m_driveY = (((m_DriveController.getRawAxis(1))+(m_DriveController.getRawAxis(5)))/2);
                 //If the controller input is less than our threshold then make it equal to 0
-        		DriveModeSwitch = (controller1.getRawButton(7));
-        		LidModeSwitch = (navController.getRawButton(2));
-        		Climb.set(navController.getRawAxis(3));
+        		m_DriveModeSwitch = (m_DriveController.getRawButton(7));
 		        break;
-		       
 		}
-		Climb.set(navController.getRawAxis(3));
-		LidModeSwitch = (navController.getRawButton(2));
+		
+		m_Climb.set(m_NavController.getRawAxis(3));
+		m_LidModeSwitch = (m_NavController.getRawButton(2));
  		
-		switch(LidToggle){
+		switch(m_LidToggle){
 			case 0://GyroDrive is in use, waiting for button to be pressed
-				LidDouble.set(DoubleSolenoid.Value.kForward);
-				if(LidModeSwitch)//Waiting for button press
-					LidToggle = 1;
-				LidMode = "Up";
+				m_LidDouble.set(DoubleSolenoid.Value.kForward);
+				if(m_LidModeSwitch)//Waiting for button press
+					m_LidToggle = 1;
+				m_LidMode = "Up";
 				break;
 			case 1://Drive 2 selected, waiting for release
-				LidDouble.set(DoubleSolenoid.Value.kReverse);
-				if(!LidModeSwitch)//Waiting for button release
-					LidToggle = 2;
-				LidMode = "Down";
+				m_LidDouble.set(DoubleSolenoid.Value.kReverse);
+				if(!m_LidModeSwitch)//Waiting for button release
+					m_LidToggle = 2;
+				m_LidMode = "Down";
 				break;
 			case 2://Drive 2 selected, looking for pressed
-				LidDouble.set(DoubleSolenoid.Value.kReverse);
-				if(LidModeSwitch)//Waiting for button press
-					LidToggle = 3;
-				LidMode = "Down";
+				m_LidDouble.set(DoubleSolenoid.Value.kReverse);
+				if(m_LidModeSwitch)//Waiting for button press
+					m_LidToggle = 3;
+				m_LidMode = "Down";
 				break;
 			case 3://GyroDrive is in use, looking for release
-				LidDouble.set(DoubleSolenoid.Value.kForward);
-				if(!LidModeSwitch)//Waiting for button release
-					LidToggle = 0;
-				LidMode = "Up";
+				m_LidDouble.set(DoubleSolenoid.Value.kForward);
+				if(!m_LidModeSwitch)//Waiting for button release
+					m_LidToggle = 0;
+				m_LidMode = "Up";
 				break;
 		}
-		SmartDashboard.putString("Lid Status: ",LidMode );
-        if(Math.abs(driveX)<0.1) driveX=0;
-        if(Math.abs(driveY)<0.1) driveY=0;
-        if(Math.abs(rotation)<0.25) {
-        	rotation=0;
+		// Create movement input dead zones.
+        if(Math.abs(m_driveX)<0.1) m_driveX=0;
+        if(Math.abs(m_driveY)<0.1) m_driveY=0;
+        if(Math.abs(m_rotation)<0.25) {
+        	m_rotation=0;	// Create dead zone if rotation input is less than .25
         } else{
-        	if (rotation < 0 )
-            	rotation = rotation + 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
+        	if (m_rotation < 0 )
+            	m_rotation = m_rotation + 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
         	else
-        		rotation = rotation - 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
+        		m_rotation = m_rotation - 0.25; // Since we're creating a dead zone, make range 0 to .75 not .25 to 1. 
         }
-/**
-		switch(speedChooserSel){
-		// RiverTODO: Use Enum for ControllerChooser values in speedChooserSel cases (see: https://docs.oracle.com/javase/tutorial/java/javaOO/enum.html )
-	        case 0:
-	        	speedMultiplier = 1;
-	        	break;
-	        case 1: 
-	        	speedMultiplier = 0.5;
-	        	break;
-	        case 2: 
-	        	speedMultiplier = 0.25;
-	        	break;
-			default:
-	        	speedMultiplier = 1;
-		} **/
-        driveX = driveX * speedMultiplier; 
-		SmartDashboard.putNumber("Drive X value",driveX);
-		SmartDashboard.putNumber("Gyro value",m_gyro.getAngle());
-        driveY = driveY * speedMultiplier; 
-		SmartDashboard.putNumber("Drive Y value",driveY);
-        rotation = rotation * speedMultiplier; 		
-        SmartDashboard.putNumber("Drive Rotation value",rotation);
+        // Allow for speed multiplier to control maximum speed. 
+        m_driveX = m_driveX * m_speedMultiplier; 
+        m_driveY = m_driveY * m_speedMultiplier; 
+        m_rotation = m_rotation * m_speedMultiplier; 	
+        
+		if(m_ShowInstrumentation){
+			SmartDashboard.putNumber("Joy Toggle value",m_JoyToggle);
 
+			int countFL = m_encoderFL.get();
+			int countBL = m_encoderBL.get();
+			int countFR = m_encoderFR.get();
+			int countBR = m_encoderBR.get();
+			SmartDashboard.putNumber("Front Left Encoder count: ",countFL);
+			SmartDashboard.putNumber("Back Left Encoder count: ",countBL);
+			SmartDashboard.putNumber("Front Right Encoder count: ",countFR);
+			SmartDashboard.putNumber("Back Right Encoder count: ",countBR);
 
-		Lights.set(light);
+			double rateFL = m_encoderFL.getRate();
+			double rateBL = m_encoderBL.getRate();
+			double rateFR = m_encoderFR.getRate();
+			double rateBR = m_encoderBR.getRate();
+			SmartDashboard.putNumber("Front Left Encoder rate: ",rateFL);
+			SmartDashboard.putNumber("Back Left Encoder rate: ",rateBL);
+			SmartDashboard.putNumber("Front Right Encoder rate: ",rateFR);
+			SmartDashboard.putNumber("Back Right Encoder rate: ",rateBR);
+			
+			double distanceFL = m_encoderFL.getDistance();
+			double distanceBL = m_encoderBL.getDistance();
+			double distanceFR = m_encoderFR.getDistance();
+			double distanceBR = m_encoderBR.getDistance();
+			double avgDistance = (distanceFL + distanceBL + distanceFR + distanceBR ) / 4;
+			SmartDashboard.putNumber("Front Left Encoder distance (in): ",distanceFL);
+			SmartDashboard.putNumber("Back Left Encoder distance (in): ",distanceBL);
+			SmartDashboard.putNumber("Front Right Encoder distance (in): ",distanceFR);
+			SmartDashboard.putNumber("Back Right Encoder distance (in): ",distanceBR);
+			SmartDashboard.putNumber("Average Encoder distance (in): ",avgDistance);
+			
+			SmartDashboard.putNumber("Drive Y value",m_driveY);
+	        SmartDashboard.putNumber("Drive Rotation value",m_rotation);
+			SmartDashboard.putNumber("Drive X value",m_driveX);
+		}
+
+		m_LightsRelay.set(light);
 		//using field orientation using the gyro vs normal drive
-		switch(DriveToggle){
+		switch(m_DriveToggle){
 			case 0://GyroDrive is in use, waiting for button to be pressed
-				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,m_gyro.getAngle());
-				if(DriveModeSwitch)//Waiting for button press
-					DriveToggle = 1;
+				m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+				if(m_DriveModeSwitch)//Waiting for button press
+					m_DriveToggle = 1;
 				break;
 			case 1://Drive 2 selected, waiting for release
-				m_Drive.mecanumDrive_Cartesian(.75*driveX,.75*driveY,rotation,0);
-				if(!DriveModeSwitch)//Waiting for button release
-					DriveToggle = 2;
-				DriveMode = "Robot Oriented";
+				m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+				if(!m_DriveModeSwitch)//Waiting for button release
+					m_DriveToggle = 2;
+				m_DriveMode = "Robot Oriented";
 				break;
 			case 2://Drive 2 selected, looking for pressed
-				m_Drive.mecanumDrive_Cartesian(.75*driveX,.75*driveY,rotation,0);
-				if(DriveModeSwitch)//Waiting for button press
-					DriveToggle = 3;
+				m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+				if(m_DriveModeSwitch)//Waiting for button press
+					m_DriveToggle = 3;
 				break;
 			case 3://GyroDrive is in use, looking for release
-				m_Drive.mecanumDrive_Cartesian(driveX,driveY,rotation,m_gyro.getAngle());
-				if(!DriveModeSwitch)//Waiting for button release
-					DriveToggle = 0;
-				DriveMode = "Field Oriented";
+				m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+				if(!m_DriveModeSwitch)//Waiting for button release
+					m_DriveToggle = 0;
+				m_DriveMode = "Field Oriented";
 				break;
 		}
-		SmartDashboard.putString("Drive mode",DriveMode );
+		// We always want to display these values.
+		double roundedGyro = Math.round(m_gyro.getAngle() * 100) / 100;
+		SmartDashboard.putNumber("Gyro value",roundedGyro);
+		SmartDashboard.putString("Lid Status",m_LidMode );
+		SmartDashboard.putString("Drive mode",m_DriveMode );
 	}	
 
 	/**
@@ -396,12 +370,14 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void testPeriodic() {
 	}
+	
 	public void resetEncoders(){
 		m_encoderFL.reset();
         m_encoderBL.reset();
         m_encoderFR.reset();
         m_encoderBR.reset();
 	}
+	
 	//Encoder count needs to be reset each time it is first called
 	public boolean driveForDistance(int Distance,double MaxPower,boolean UseGyro){
 		boolean retVal=false;
@@ -447,6 +423,7 @@ public class Robot extends IterativeRobot {
 			m_Drive.mecanumDrive_Cartesian(0,-MaxPower,0,0);
 		return retVal;
 	}
+	
 	public boolean turnXDegrees(int Turn,double TurnPower){
 		boolean retVal=false;
 		if (m_storedValueTF=false){
