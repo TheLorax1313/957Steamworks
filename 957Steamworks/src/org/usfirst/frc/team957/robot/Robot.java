@@ -79,9 +79,11 @@ public class Robot extends IterativeRobot {
 	double m_speedMultiplier;
 	String m_DriveMode;
 	String m_LidMode;
+	String m_TeleAuto = "Driver";
 	DoubleSolenoid m_LidDouble = new DoubleSolenoid(1, 0, 1);
 	Boolean m_ShowInstrumentation = false; 
 	AutonomusFinder Auto = new AutonomusFinder();
+	int m_autoTarget = 0;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -251,6 +253,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		boolean autoButton = false;
+		boolean AutoAimEnabled = false;
 		m_ShowInstrumentation = m_DisplayDataChooser.getSelected();
 		m_JoyToggle = m_ControllerChooser.getSelected();
 		m_ResetGyro = m_GyroResetChooser.getSelected();
@@ -268,6 +272,7 @@ public class Robot extends IterativeRobot {
         		m_driveY = (((m_Joy1.getRawAxis(1))+(m_Joy2.getRawAxis(1)))/2);
         		m_DriveModeSwitch = (m_Joy1.getRawButton(3));
         		m_POVFinal = m_Joy1.getPOV();
+        		autoButton = (m_Joy1.getRawButton(3));
 	        	break;
 			 case 1://Single Joystick
 				m_rotation = (m_Joy1.getRawAxis(2));
@@ -275,6 +280,7 @@ public class Robot extends IterativeRobot {
 				m_driveY = (m_Joy1.getRawAxis(1));
 				m_DriveModeSwitch = (m_Joy1.getRawButton(2));
 				m_POVFinal = m_Joy1.getPOV();
+				autoButton = (m_Joy1.getRawButton(3));
 			 	break;
 			 case 2://Xbox Controller
 		        m_rotation = (((m_DriveController.getRawAxis(5))-(m_DriveController.getRawAxis(1)))/2);
@@ -283,7 +289,36 @@ public class Robot extends IterativeRobot {
                 //If the controller input is less than our threshold then make it equal to 0
         		m_POVFinal = m_DriveController.getPOV();
         		m_DriveModeSwitch = (m_DriveController.getRawButton(7));
+        		autoButton = (m_DriveController.getRawButton(3));
 		        break;
+		}
+		
+		switch(m_autoTarget){
+		case 0:
+			AutoAimEnabled=false;
+			m_TeleAuto = "Driver";
+			if(autoButton)//Waiting for button press
+				m_autoTarget = 1;
+			break;
+		case 1:
+			AutoAimEnabled=true;
+			m_TeleAuto = "Auto Aim";
+			if(!autoButton)//Waiting for button release
+				m_autoTarget = 2;
+			break;
+		case 2:
+			AutoAimEnabled=true;
+			m_TeleAuto = "Auto Aim";
+			if(autoButton)//Waiting for button press
+				m_autoTarget = 3;
+			break;
+		case 3:
+			AutoAimEnabled=false;
+			m_TeleAuto = "Driver";
+			if(!autoButton)//Waiting for button release
+				m_autoTarget = 0;
+			break;
+			
 		}
 		
         if(m_POVFinal == 45 || m_POVFinal == 225){
@@ -387,32 +422,38 @@ public class Robot extends IterativeRobot {
 	        SmartDashboard.putNumber("Drive Rotation value",m_rotation);
 			SmartDashboard.putNumber("Drive X value",m_driveX);
 		}
-
-		m_LightsRelay.set(light);
-		//using field orientation using the gyro vs normal drive
-		switch(m_DriveToggle){
-			case 0://GyroDrive is in use, waiting for button to be pressed
-				m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-				if(m_DriveModeSwitch)//Waiting for button press
-					m_DriveToggle = 1;
-				break;
-			case 1://Drive 2 selected, waiting for release
-				m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
-				if(!m_DriveModeSwitch)//Waiting for button release
-					m_DriveToggle = 2;
-				m_DriveMode = "Robot Oriented";
-				break;
-			case 2://Drive 2 selected, looking for pressed
-				m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
-				if(m_DriveModeSwitch)//Waiting for button press
-					m_DriveToggle = 3;
-				break;
-			case 3://GyroDrive is in use, looking for release
-				m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-				if(!m_DriveModeSwitch)//Waiting for button release
-					m_DriveToggle = 0;
-				m_DriveMode = "Field Oriented";
-				break;
+		if(AutoAimEnabled){
+			m_LightsRelay.set(Relay.Value.kForward);
+			Auto.AutoDetect();
+			double XFinal = Auto.acceptedXFinal();
+			AutoDrive(0.25,XFinal);
+		}else{
+			//using field orientation using the gyro vs normal drive
+			m_LightsRelay.set(light);
+			switch(m_DriveToggle){
+				case 0://GyroDrive is in use, waiting for button to be pressed
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+					if(m_DriveModeSwitch)//Waiting for button press
+						m_DriveToggle = 1;
+					break;
+				case 1://Drive 2 selected, waiting for release
+					m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+					if(!m_DriveModeSwitch)//Waiting for button release
+						m_DriveToggle = 2;
+					m_DriveMode = "Robot Oriented";
+					break;
+				case 2://Drive 2 selected, looking for pressed
+					m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+					if(m_DriveModeSwitch)//Waiting for button press
+						m_DriveToggle = 3;
+					break;
+				case 3://GyroDrive is in use, looking for release
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+					if(!m_DriveModeSwitch)//Waiting for button release
+						m_DriveToggle = 0;
+					m_DriveMode = "Field Oriented";
+					break;
+			}
 		}
 		// We always want to display these values.
 		double roundedGyro = Math.round(m_gyro.getAngle() * 100) / 100;
@@ -420,6 +461,7 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("Lid Status",m_LidMode );
 		SmartDashboard.putString("Drive mode",m_DriveMode );
 		SmartDashboard.putString("CameraURL","http://raspberrypi.local:1183/stream.mjpg" );
+		SmartDashboard.putString("Auto Aim",m_TeleAuto);
 	}	
 
 	/**
