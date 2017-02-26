@@ -1,0 +1,185 @@
+<xml version="1.0">
+<dashboard>
+	<widget field="Auto Aim" type="String" class="edu.wpi.first.smartdashboard.gui.elements.FormattedField">
+		<location x="623" y="521"/>
+		<width>223</width>
+		<property name="Background" value="255.51.51.255"/>
+		<property name="Font Size" value="36"/>
+	</widget>
+	<widget field="CameraURL" type="String" class="edu.wpi.first.smartdashboard.gui.elements.TextBox">
+		<location x="531" y="438"/>
+		<width>403</width>
+	</widget>
+	<widget field="Gyro value" type="Number" class="edu.wpi.first.smartdashboard.gui.elements.FormattedField">
+		<location x="1093" y="32"/>
+		<width>142</width>
+		<height>50</height>
+		<property name="Background" value="102.255.102.255"/>
+		<property name="Font Size" value="36"/>
+	</widget>
+	<widget field="Lid Status" type="String" class="edu.wpi.first.smartdashboard.gui.elements.FormattedField">
+		<location x="897" y="32"/>
+		<width>188</width>
+		<property name="Background" value="0.204.204.255"/>
+		<property name="Font Size" value="36"/>
+	</widget>
+	<widget field="Instrumentation" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1455" y="20"/>
+		<property name="Use Radio Buttons" value="false"/>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.MjpgStreamViewerImpl">
+		<location x="1054" y="120"/>
+		<width>520</width>
+		<height>426</height>
+		<property name="MJPG Server URL" value="http://raspberrypi.local:1184/stream.mjpg"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.MjpgStreamViewerImpl">
+		<location x="485" y="118"/>
+		<width>544</width>
+		<height>315</height>
+		<property name="MJPG Server URL" value="http://raspberrypi.local:1183/stream.mjpg"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.MjpgStreamViewerImpl">
+		<location x="12" y="71"/>
+		<width>394</width>
+		<height>510</height>
+		<property name="MJPG Server URL" value="http://raspberrypi.local:1185/stream.mjpg"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1467" y="6"/>
+		<property name="Text" value="Instrumentation"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="1353" y="6"/>
+		<property name="Text" value="Reset Gyro"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="171" y="3"/>
+		<property name="Text" value="Controller"/>
+	</static-widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Label">
+		<location x="24" y="3"/>
+		<property name="Text" value="Auto Mode"/>
+	</static-widget>
+	<widget field="Drive mode" type="String" class="edu.wpi.first.smartdashboard.gui.elements.FormattedField">
+		<location x="547" y="30"/>
+		<width>343</width>
+		<height>56</height>
+		<property name="Background" value="255.255.0.255"/>
+		<property name="Font Size" value="36"/>
+	</widget>
+	<widget field="Gyro Reset" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="1341" y="22"/>
+		<property name="Use Radio Buttons" value="false"/>
+	</widget>
+	<widget field="Auto choices" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="12" y="18"/>
+		<property name="Use Radio Buttons" value="false"/>
+	</widget>
+	<widget field="Controller Chooser" type="String Chooser" class="edu.wpi.first.smartdashboard.gui.elements.Chooser">
+		<location x="162" y="18"/>
+		<property name="Use Radio Buttons" value="false"/>
+	</widget>
+	<static-widget class="edu.wpi.first.smartdashboard.gui.elements.Image">
+		<location x="2" y="-5"/>
+		<property name="Image File" value="C:\Users\newuser\Desktop\DashboardBackground.jpg"/>
+	</static-widget>
+</dashboard>
+<live-window>
+	<widget field="Ungrouped" type="LW Subsystem" class="edu.wpi.first.smartdashboard.livewindow.elements.LWSubsystem">
+		<widget field="CANTalon[2]" type="CANSpeedController" class="edu.wpi.first.smartdashboard.livewindow.elements.CANSpeedController">
+			<location x="6" y="16"/>
+			<height>141</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[7]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="157"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="Encoder[4]" type="Encoder" class="edu.wpi.first.smartdashboard.livewindow.elements.EncoderDisplay">
+			<location x="6" y="177"/>
+			<height>98</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[0]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="275"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[1]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="295"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[5]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="315"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="ADXRS450_Gyro[0]" type="Gyro" class="edu.wpi.first.smartdashboard.gui.elements.Compass">
+			<location x="6" y="335"/>
+			<height>150</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[2]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="485"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="CANTalon[5]" type="CANSpeedController" class="edu.wpi.first.smartdashboard.livewindow.elements.CANSpeedController">
+			<location x="6" y="505"/>
+			<height>141</height>
+			<width>293</width>
+		</widget>
+		<widget field="CANTalon[3]" type="CANSpeedController" class="edu.wpi.first.smartdashboard.livewindow.elements.CANSpeedController">
+			<location x="6" y="646"/>
+			<height>141</height>
+			<width>293</width>
+		</widget>
+		<widget field="DoubleSolenoid[1,0]" type="Double Solenoid" class="edu.wpi.first.smartdashboard.livewindow.elements.RelayController">
+			<location x="6" y="787"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[6]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="807"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[4]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="827"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="Relay[0]" type="Relay" class="edu.wpi.first.smartdashboard.livewindow.elements.RelayController">
+			<location x="6" y="847"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="Spark[0]" type="Speed Controller" class="edu.wpi.first.smartdashboard.livewindow.elements.SpeedController">
+			<location x="6" y="867"/>
+			<height>46</height>
+			<width>293</width>
+		</widget>
+		<widget field="DigitalInput[3]" type="Digital Input" class="edu.wpi.first.smartdashboard.livewindow.elements.DigitalInputDisplay">
+			<location x="6" y="913"/>
+			<height>20</height>
+			<width>293</width>
+		</widget>
+		<widget field="CANTalon[4]" type="CANSpeedController" class="edu.wpi.first.smartdashboard.livewindow.elements.CANSpeedController">
+			<location x="6" y="933"/>
+			<height>141</height>
+			<width>293</width>
+		</widget>
+		<widget field="Encoder[6]" type="Encoder" class="edu.wpi.first.smartdashboard.livewindow.elements.EncoderDisplay">
+			<location x="6" y="1074"/>
+			<height>98</height>
+			<width>293</width>
+		</widget>
+		<location x="0" y="0"/>
+		<width>305</width>
+		<height>1179</height>
+	</widget>
+</live-window>
+</xml>
