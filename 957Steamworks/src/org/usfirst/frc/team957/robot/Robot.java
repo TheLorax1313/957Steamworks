@@ -9,9 +9,13 @@ import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
+import edu.wpi.first.wpilibj.Timer;
+
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.cscore.HttpCamera;
+import edu.wpi.cscore.MjpegServer;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
@@ -84,6 +88,12 @@ public class Robot extends IterativeRobot {
 	Boolean m_ShowInstrumentation = false; 
 	AutonomusFinder Auto = new AutonomusFinder();
 	int m_autoTarget = 0;
+	//Vision Switching
+	MjpegServer m_DriverStream = new MjpegServer("Use for Pi Cameras", 1181);
+	HttpCamera m_PiCam = new HttpCamera("PiCam", "raspberrypi.local:1185"); 
+	HttpCamera m_GearCam = new HttpCamera("GearCam", "raspberrypi.local:1184");
+	HttpCamera m_ClimbCam = new HttpCamera("ClimbCam", "raspberrypi.local:1183");
+	int m_CameraSwitch;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -262,6 +272,37 @@ public class Robot extends IterativeRobot {
 
 		if(m_ResetGyro) {
 			m_gyro.reset();
+		}
+		//Code for switching cameras. Disable if no Pi streaming enabled if causing problems.
+		if(Timer.getMatchTime() < 10){	
+			switch(m_CameraSwitch){
+			case 0://Pi Camera
+				m_DriverStream.setSource(m_PiCam);
+				if(m_NavController.getRawButton(4) == true){
+					m_CameraSwitch = 1;
+				}
+				break;
+			case 1:
+				m_DriverStream.setSource(m_PiCam);
+				if(m_NavController.getRawButton(4) == false){
+					m_CameraSwitch = 2;
+				}
+				break;
+			case 2://Gear camera
+				m_DriverStream.setSource(m_GearCam);
+				if(m_NavController.getRawButton(4) == true){
+					m_CameraSwitch = 3;
+				}
+				break;
+			case 3:
+				m_DriverStream.setSource(m_GearCam);
+				if(m_NavController.getRawButton(4) == false){
+					m_CameraSwitch = 0;
+				}
+				break;	
+		}
+		}else{
+			m_DriverStream.setSource(m_ClimbCam);
 		}
 		
 		//Drive Code for each controller type selected by Java Dashboard
@@ -462,8 +503,8 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("Drive mode",m_DriveMode );
 		SmartDashboard.putString("CameraURL","http://raspberrypi.local:1183/stream.mjpg" );
 		SmartDashboard.putString("Auto Aim",m_TeleAuto);
-	}	
-
+		}	
+	
 	/**
 	 * This function is called periodically during test mode
 	 */
@@ -562,5 +603,5 @@ public class Robot extends IterativeRobot {
 			m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);		
 		}
 	}
-}
+	}
 
