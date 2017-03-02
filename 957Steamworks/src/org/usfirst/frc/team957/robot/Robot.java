@@ -497,7 +497,9 @@ public class Robot extends IterativeRobot {
 			}
 		}
 		// We always want to display these values.
-		double roundedGyro = Math.round(m_gyro.getAngle() * 100) / 100;
+		double roundedGyro = (m_gyro.getAngle() % 360) * 10  ;
+		roundedGyro = Math.round(roundedGyro); 
+		roundedGyro = roundedGyro / 10;
 		SmartDashboard.putNumber("Gyro value",roundedGyro);
 		SmartDashboard.putString("Lid Status",m_LidMode );
 		SmartDashboard.putString("Drive mode",m_DriveMode );
