@@ -188,17 +188,17 @@ public class Robot extends IterativeRobot {
 			default:
 			break;
 		case 1://Cross the line
-			driveForDistance(80,0.5,true);
+			driveForDistance(100,0.5,true);
 			break;
 		case 2://Turn Right
 			m_autoTurnRight=true;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(75,0.5,true)) 
+					if(driveForDistance(93,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(45,0.3)){
+					if(turnXDegrees(60,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -208,7 +208,7 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 20){
+					if(avgDistance <= 65){
 						AutoDrive(0.25,XFinal);
 					}else{
 						AutoDrive(0,0);
@@ -220,11 +220,11 @@ public class Robot extends IterativeRobot {
 			m_autoTurnRight=false;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(75,0.5,true)) 
+					if(driveForDistance(93,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(45,0.3)){
+					if(turnXDegrees(60,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -234,7 +234,7 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 20){
+					if(avgDistance <= 65){
 						AutoDrive(0.25,XFinal);
 					}else{
 						AutoDrive(0,0);
@@ -243,7 +243,7 @@ public class Robot extends IterativeRobot {
 				}			
 			break;
 		case 4://Drive forward
-			if(avgDistance <= 80){
+			if(avgDistance <= 102){
 				AutoDrive(0.25,XFinal);
 			}else{
 				AutoDrive(0,0);
