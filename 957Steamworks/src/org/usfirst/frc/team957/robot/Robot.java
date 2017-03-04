@@ -10,12 +10,8 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
-
 import com.ctre.CANTalon;
-
 import edu.wpi.first.wpilibj.Relay;
-import edu.wpi.cscore.HttpCamera;
-import edu.wpi.cscore.MjpegServer;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
@@ -276,13 +272,13 @@ public class Robot extends IterativeRobot {
 		if(m_ResetGyro) {
 			m_gyro.reset();
 		}
-		if(m_NavController.getPOV() == 90){
+		if(m_NavController.getPOV() == 0){//Main
 			m_CameraSwitch = 0;
 		}
-		if(m_NavController.getPOV() == 180){
+		if(m_NavController.getPOV() == 180){//Back
 			m_CameraSwitch = 4;
 		}
-		if(m_NavController.getPOV() == 270){
+		if(m_NavController.getPOV() == 270){//Gear
 			m_CameraSwitch = 2;
 		}
 			
