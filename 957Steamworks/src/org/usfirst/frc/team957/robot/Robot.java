@@ -6,10 +6,10 @@ import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.RobotDrive;
 import edu.wpi.first.wpilibj.RobotDrive.MotorType;
 import edu.wpi.first.wpilibj.command.Command;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
-import edu.wpi.first.wpilibj.Timer;
 
 import com.ctre.CANTalon;
 
@@ -89,11 +89,10 @@ public class Robot extends IterativeRobot {
 	AutonomusFinder Auto = new AutonomusFinder();
 	int m_autoTarget = 0;
 	//Vision Switching
-	MjpegServer m_DriverStream = new MjpegServer("Use for Pi Cameras", 1181);
-	HttpCamera m_PiCam = new HttpCamera("PiCam", "raspberrypi.local:1185"); 
-	HttpCamera m_GearCam = new HttpCamera("GearCam", "raspberrypi.local:1184");
-	HttpCamera m_ClimbCam = new HttpCamera("ClimbCam", "raspberrypi.local:1183");
-	int m_CameraSwitch;
+	NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
+	double m_CameraSwitch; 
+	
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -148,6 +147,10 @@ public class Robot extends IterativeRobot {
         m_encoderFR.setDistancePerPulse(Math.PI*6/360);
         m_encoderBR.setDistancePerPulse(Math.PI*6/360);
         resetEncoders();
+        m_CameraSwitch = 0;
+        
+        Pi_RioCom.putNumber("X20", m_CameraSwitch);
+        
 	}
 
 	/**
@@ -268,43 +271,23 @@ public class Robot extends IterativeRobot {
 		m_ShowInstrumentation = m_DisplayDataChooser.getSelected();
 		m_JoyToggle = m_ControllerChooser.getSelected();
 		m_ResetGyro = m_GyroResetChooser.getSelected();
-		Relay.Value light=Relay.Value.kOff;
-
+		Relay.Value light=Relay.Value.kOff; //10.9.57.73
+		
 		if(m_ResetGyro) {
 			m_gyro.reset();
 		}
-		//Code for switching cameras. Disable if no Pi streaming enabled if causing problems.
-		if(Timer.getMatchTime() < 10){	
-			switch(m_CameraSwitch){
-			case 0://Pi Camera
-				m_DriverStream.setSource(m_PiCam);
-				if(m_NavController.getRawButton(4) == true){
-					m_CameraSwitch = 1;
-				}
-				break;
-			case 1:
-				m_DriverStream.setSource(m_PiCam);
-				if(m_NavController.getRawButton(4) == false){
-					m_CameraSwitch = 2;
-				}
-				break;
-			case 2://Gear camera
-				m_DriverStream.setSource(m_GearCam);
-				if(m_NavController.getRawButton(4) == true){
-					m_CameraSwitch = 3;
-				}
-				break;
-			case 3:
-				m_DriverStream.setSource(m_GearCam);
-				if(m_NavController.getRawButton(4) == false){
-					m_CameraSwitch = 0;
-				}
-				break;	
+		if(m_NavController.getPOV() == 90){
+			m_CameraSwitch = 0;
 		}
-		}else{
-			m_DriverStream.setSource(m_ClimbCam);
+		if(m_NavController.getPOV() == 180){
+			m_CameraSwitch = 4;
 		}
-		
+		if(m_NavController.getPOV() == 270){
+			m_CameraSwitch = 2;
+		}
+			
+			
+			Pi_RioCom.putNumber("X20", m_CameraSwitch);
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(m_JoyToggle){
 	        case 0://Dual Joystick tank

@@ -58,8 +58,8 @@ public class AutonomusFinder {
 		double acceptedY1 = -1;
 		double acceptedY2 = -1;
 		
-		double CameraResX = 270;
-		double CameraResY= 370;
+		double CameraResX = 340;
+		double CameraResY= 280;
 	
 		contourAccepted(x0,y0,height0,width0,0);
 		contourAccepted(x1,y1,height1,width1,1);
