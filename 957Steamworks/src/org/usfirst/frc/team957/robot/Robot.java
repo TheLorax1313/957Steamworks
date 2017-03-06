@@ -188,13 +188,13 @@ public class Robot extends IterativeRobot {
 			default:
 			break;
 		case 1://Cross the line
-			driveForDistance(100,0.5,true);
+			driveForDistance(85,0.5,true);
 			break;
 		case 2://Turn Right
 			m_autoTurnRight=true;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(93,0.5,true)) 
+					if(driveForDistance(73,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
@@ -220,7 +220,7 @@ public class Robot extends IterativeRobot {
 			m_autoTurnRight=false;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(93,0.5,true)) 
+					if(driveForDistance(73,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
@@ -243,7 +243,7 @@ public class Robot extends IterativeRobot {
 				}			
 			break;
 		case 4://Drive forward
-			if(avgDistance <= 102){
+			if(avgDistance <= 85){
 				AutoDrive(0.25,XFinal);
 			}else{
 				AutoDrive(0,0);
@@ -273,7 +273,7 @@ public class Robot extends IterativeRobot {
 			m_gyro.reset();
 		}
 		if(m_NavController.getPOV() == 0){//Main
-			m_CameraSwitch = 0;
+			m_CameraSwitch = 1;
 		}
 		if(m_NavController.getPOV() == 180){//Back
 			m_CameraSwitch = 4;
@@ -457,13 +457,13 @@ public class Robot extends IterativeRobot {
 						m_DriveToggle = 1;
 					break;
 				case 1://Drive 2 selected, waiting for release
-					m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
 					if(!m_DriveModeSwitch)//Waiting for button release
 						m_DriveToggle = 2;
 					m_DriveMode = "Robot Oriented";
 					break;
 				case 2://Drive 2 selected, looking for pressed
-					m_Drive.mecanumDrive_Cartesian(.75*m_driveX,.75*m_driveY,m_rotation,0);
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
 					if(m_DriveModeSwitch)//Waiting for button press
 						m_DriveToggle = 3;
 					break;
@@ -482,7 +482,6 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Gyro value",roundedGyro);
 		SmartDashboard.putString("Lid Status",m_LidMode );
 		SmartDashboard.putString("Drive mode",m_DriveMode );
-		SmartDashboard.putString("CameraURL","http://raspberrypi.local:1183/stream.mjpg" );
 		SmartDashboard.putString("Auto Aim",m_TeleAuto);
 		}	
 	
@@ -569,7 +568,7 @@ public class Robot extends IterativeRobot {
 		return retVal;
 	}
 	public void AutoDrive(double speed, double XFinal){
-		
+		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
 			if(XFinal < 5 && XFinal > -5){
 				m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);
