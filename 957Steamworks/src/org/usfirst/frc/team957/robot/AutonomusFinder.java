@@ -17,8 +17,8 @@ public class AutonomusFinder {
 	double contourCounter = 0;
 	double acceptedContour1;
 	double acceptedContour2;
-	double minAR = 2.2;
-	double maxAR = 2.8;
+	double minAR = 2.0;
+	double maxAR = 3;
 
 	public void AutoDetect(){
 		NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
@@ -116,7 +116,7 @@ public class AutonomusFinder {
 				acceptedX2 = x3;
 				acceptedY2 = y3;
 			}
-			acceptedXFinal = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2);
+			acceptedXFinal = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2) + 25;
 			acceptedYFinal = ((acceptedY1 + acceptedY2)/2) - ((CameraResY)/2);	
 		}
 	}

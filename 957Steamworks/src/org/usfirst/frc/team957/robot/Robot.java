@@ -110,9 +110,9 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putData("Auto choices", m_AutoChooser);
 
 		m_ControllerChooser = new SendableChooser<Integer>();
-		m_ControllerChooser.addDefault("Dual JoySticks",0);
+		m_ControllerChooser.addObject("Dual JoySticks",0);
 		m_ControllerChooser.addObject("Single JoySticks",1);
-		m_ControllerChooser.addObject("360 Controller",2);		
+		m_ControllerChooser.addDefault("360 Controller",2);		
 		SmartDashboard.putData("Controller Chooser",m_ControllerChooser);
 
 		m_GyroResetChooser = new SendableChooser<Boolean>();
@@ -125,7 +125,7 @@ public class Robot extends IterativeRobot {
 		m_LidToggle = 0;
 		m_LidMode = "Up";
 		m_DriveMode = "Field Oriented";
-		m_JoyToggle = 0;
+		m_JoyToggle = 2;
 		m_LightsRelay = new Relay(0);
 		m_LightsRelay.setDirection(Relay.Direction.kForward);
 		m_Drive.setInvertedMotor(MotorType.kFrontRight, true);
@@ -183,22 +183,24 @@ public class Robot extends IterativeRobot {
 		Auto.AutoDetect();
 		double XFinal = Auto.acceptedXFinal();
 		double YFinal = Auto.acceptedYFinal();
+		SmartDashboard.putNumber("Selected",m_autoSelected);
+		SmartDashboard.putNumber("Step",m_autoCase);
 		switch (m_autoSelected) {
 		case 0://Do Nothing
 			default:
 			break;
 		case 1://Cross the line
-			driveForDistance(85,0.5,true);
+			driveForDistance(80,0.35,true);
 			break;
 		case 2://Turn Right
 			m_autoTurnRight=true;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(73,0.5,true)) 
+					if(driveForDistance(80,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(60,0.3)){
+					if(turnXDegrees(45,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -208,8 +210,8 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 65){
-						AutoDrive(0.25,XFinal);
+					if(avgDistance <= 30){
+						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
 					}
@@ -220,11 +222,11 @@ public class Robot extends IterativeRobot {
 			m_autoTurnRight=false;
 			switch (m_autoCase){
 				case 0:
-					if(driveForDistance(73,0.5,true)) 
+					if(driveForDistance(80,0.5,true)) 
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(60,0.3)){
+					if(turnXDegrees(45,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -234,8 +236,8 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 65){
-						AutoDrive(0.25,XFinal);
+					if(avgDistance <= 85){
+						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
 					}
@@ -243,8 +245,8 @@ public class Robot extends IterativeRobot {
 				}			
 			break;
 		case 4://Drive forward
-			if(avgDistance <= 85){
-				AutoDrive(0.25,XFinal);
+			if((avgDistance <= 80)){
+				AutoDrive(0.233,XFinal);
 			}else{
 				AutoDrive(0,0);
 			}
@@ -446,7 +448,7 @@ public class Robot extends IterativeRobot {
 			m_LightsRelay.set(Relay.Value.kForward);
 			Auto.AutoDetect();
 			double XFinal = Auto.acceptedXFinal();
-			AutoDrive(0.25,XFinal);
+			AutoDrive(0.233,XFinal);
 		}else{
 			//using field orientation using the gyro vs normal drive
 			m_LightsRelay.set(light);
