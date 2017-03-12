@@ -111,8 +111,8 @@ public class Robot extends IterativeRobot {
 
 		m_ControllerChooser = new SendableChooser<Integer>();
 		m_ControllerChooser.addObject("Dual JoySticks",0);
-		m_ControllerChooser.addObject("Single JoySticks",1);
-		m_ControllerChooser.addDefault("360 Controller",2);		
+		m_ControllerChooser.addDefault("Single JoySticks",1);
+		m_ControllerChooser.addObject("360 Controller",2);		
 		SmartDashboard.putData("Controller Chooser",m_ControllerChooser);
 
 		m_GyroResetChooser = new SendableChooser<Boolean>();
