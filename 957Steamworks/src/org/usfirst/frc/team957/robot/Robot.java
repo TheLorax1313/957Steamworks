@@ -87,8 +87,9 @@ public class Robot extends IterativeRobot {
 	//Vision Switching
 	NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
 	double m_CameraSwitch; 
-	
-	
+	double m_distance;
+	double m_prevDistance;
+	double m_distanceLeft;
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -146,7 +147,9 @@ public class Robot extends IterativeRobot {
         m_CameraSwitch = 0;
         
         Pi_RioCom.putNumber("X20", m_CameraSwitch);
-        
+        Auto.distanceInit();
+        m_distance = 80;
+        m_prevDistance = 80;
 	}
 
 	/**
@@ -186,7 +189,21 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("Selected",m_autoSelected);
 		SmartDashboard.putNumber("Step",m_autoCase);
 		switch (m_autoSelected) {
-		case 0://Do Nothing
+		case 0://Do Nothing (currently has test code for distance,
+			//is commented out
+			/*
+			m_distance = Auto.distance();
+			if(!(m_prevDistance == m_distance)){
+				resetEncoders();
+				m_prevDistance = m_distance;
+			}
+			m_distanceLeft = (m_distance + 5) - avgDistance;
+			if(m_distanceLeft >= 0){
+				AutoDrive(0.35,XFinal);
+			}else{
+				AutoDrive(0,0);
+			}
+			*/
 			default:
 			break;
 		case 1://Cross the line

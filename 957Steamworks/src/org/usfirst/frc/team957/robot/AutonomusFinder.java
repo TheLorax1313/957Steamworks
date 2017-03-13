@@ -19,7 +19,19 @@ public class AutonomusFinder {
 	double acceptedContour2;
 	double minAR = 2.0;
 	double maxAR = 3;
-
+	double CameraResX = 340;
+	double CameraResY= 280;
+	double distance;
+	double trueHeight = 5;
+	double trueWidth = 8.25;
+	double FOV = 69;
+	double DashboardDistance;
+	
+	public void distanceInit(){
+		distance = 80; //this is to give the variable distance an initial 
+		//value that won't be given again during Auto to make it so there 
+		//will not be any NaN errors.
+	}
 	public void AutoDetect(){
 		NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
 		acceptedXFinal = -666;
@@ -27,7 +39,7 @@ public class AutonomusFinder {
 		contourCounter = 0;
 		acceptedContour1 = -1;
 		acceptedContour2 = -1;
-
+		boolean B_Distance;
 		
 		double x0 = Pi_RioCom.getNumber("X0",0);
 		double x1 = Pi_RioCom.getNumber("X1",2);
@@ -58,8 +70,7 @@ public class AutonomusFinder {
 		double acceptedY1 = -1;
 		double acceptedY2 = -1;
 		
-		double CameraResX = 340;
-		double CameraResY= 280;
+		
 	
 		contourAccepted(x0,y0,height0,width0,0);
 		contourAccepted(x1,y1,height1,width1,1);
@@ -118,7 +129,13 @@ public class AutonomusFinder {
 			}
 			acceptedXFinal = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2) + 25;
 			acceptedYFinal = ((acceptedY1 + acceptedY2)/2) - ((CameraResY)/2);	
+			
+			double widthPixels = Math.abs(acceptedX1 - acceptedX2);
+			double objectFOV_Tri = ((widthPixels/CameraResX)*FOV)/2;
+			distance = (trueWidth/2)/(Math.tan(objectFOV_Tri)) ;
 		}
+		
+		SmartDashboard.putNumber("distance",distance);	
 	}
 	
 		
@@ -143,5 +160,9 @@ public class AutonomusFinder {
 	public double acceptedYFinal() {
 		return acceptedYFinal;
 	}
-
+	
+	public double distance(){
+		return distance;
+	}
+	
 }
