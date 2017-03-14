@@ -26,7 +26,7 @@ public class AutonomusFinder {
 	double trueWidth = 8.25;
 	double FOV = 69;
 	double DashboardDistance;
-	
+	double botHeight =  19.25; //minus tape height
 	public void distanceInit(){
 		distance = 80; //this is to give the variable distance an initial 
 		//value that won't be given again during Auto to make it so there 
@@ -132,7 +132,9 @@ public class AutonomusFinder {
 			
 			double widthPixels = Math.abs(acceptedX1 - acceptedX2);
 			double objectFOV_Tri = ((widthPixels/CameraResX)*FOV)/2;
-			distance = (trueWidth/2)/(Math.tan(objectFOV_Tri)) ;
+			double hyp = (trueWidth/2)/(Math.tan(objectFOV_Tri)) ;
+			double distAng = Math.cos(botHeight/hyp);
+			distance = Math.tan(distAng)*botHeight;
 		}
 		
 		SmartDashboard.putNumber("distance",distance);	
