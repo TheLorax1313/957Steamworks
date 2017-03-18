@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  * directory.
  */
 public class Robot extends IterativeRobot {
-	// RiverTODO: Rename class member variables to start with m_
 	final int m_DoNothing = 0;
 	final int m_CrosstheLine = 1;
 	final int m_TurnRight = 2;
@@ -33,11 +32,8 @@ public class Robot extends IterativeRobot {
 	int m_autoSelected;
 	SendableChooser<Integer> m_AutoChooser;
 	SendableChooser<Integer> m_ControllerChooser;
-	SendableChooser<Boolean> m_GyroResetChooser;
-	SendableChooser<Boolean> m_DisplayDataChooser;
 	//Joystick Defining
 	Joystick m_Joy1 = new Joystick(1); //flight stick 1
-	Joystick m_Joy2 = new Joystick(2); //flight stick 2
 	Joystick m_DriveController = new Joystick(0); //controller
 	Joystick m_NavController = new Joystick(3); //controller
 	CANTalon m_fl = new CANTalon(2);
@@ -80,8 +76,8 @@ public class Robot extends IterativeRobot {
 	String m_DriveMode;
 	String m_LidMode;
 	String m_TeleAuto = "Driver";
-	DoubleSolenoid m_LidDouble = new DoubleSolenoid(1, 0, 1);
-	Boolean m_ShowInstrumentation = false; 
+	DoubleSolenoid m_LidSolenoid = new DoubleSolenoid(1, 0, 1);
+	Boolean m_ShowAllData = false; 
 	AutonomusFinder Auto = new AutonomusFinder();
 	int m_autoTarget = 0;
 	//Vision Switching
@@ -97,30 +93,19 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void robotInit() {
 		
-		m_DisplayDataChooser = new SendableChooser<Boolean>();
-		m_DisplayDataChooser.addDefault("Hide", false);
-		m_DisplayDataChooser.addObject("Show", true);
-		SmartDashboard.putData("Instrumentation", m_DisplayDataChooser);
-		
 		m_AutoChooser = new SendableChooser<Integer>();
 		m_AutoChooser.addDefault("Do Nothing", m_DoNothing);
 		m_AutoChooser.addObject("Cross the Line", m_CrosstheLine);
 		m_AutoChooser.addObject("Turn Right", m_TurnRight);
 		m_AutoChooser.addObject("Turn Left", m_TurnLeft);
 		m_AutoChooser.addObject("Forward", m_Forward);
-		SmartDashboard.putData("Auto choices", m_AutoChooser);
+		SmartDashboard.putData("autoChoices", m_AutoChooser);
 
 		m_ControllerChooser = new SendableChooser<Integer>();
-		m_ControllerChooser.addObject("Dual JoySticks",0);
-		m_ControllerChooser.addDefault("Single JoySticks",1);
-		m_ControllerChooser.addObject("360 Controller",2);		
-		SmartDashboard.putData("Controller Chooser",m_ControllerChooser);
+		m_ControllerChooser.addDefault("Single JoySticks",0);
+		m_ControllerChooser.addObject("360 Controller",1);		
+		SmartDashboard.putData("controllerChooser",m_ControllerChooser);
 
-		m_GyroResetChooser = new SendableChooser<Boolean>();
-		m_GyroResetChooser.addDefault("waiting",false);
-		m_GyroResetChooser.addObject("Reset",true);
-		SmartDashboard.putData("Gyro Reset",m_GyroResetChooser);
-		
 		m_speedSwitch = 1;
 		m_DriveToggle = 0;
 		m_LidToggle = 0;
@@ -153,6 +138,28 @@ public class Robot extends IterativeRobot {
 	}
 
 	/**
+	 * This function is called to initialize the bot while the it is disabled.
+	 */
+	@Override
+	public void disabledInit() {
+	}
+
+	/**
+	 * This function is called periodically while the bot is disabled.
+	 */
+	@Override
+	public void disabledPeriodic() {
+		m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		if (m_ResetGyro){
+			m_gyro.reset();
+			SmartDashboard.putBoolean("gyroReset", false);
+		}
+		m_JoyToggle = m_ControllerChooser.getSelected();
+		m_autoSelected = m_AutoChooser.getSelected();
+		showInstrumentation();
+	}
+	
+	/**
 	 * This autonomous (along with the chooser code above) shows how to select
 	 * between different autonomous modes using the dashboard. The sendable
 	 * chooser code works with the Java SmartDashboard. If you prefer the
@@ -169,6 +176,7 @@ public class Robot extends IterativeRobot {
 		m_storedValueTF=false;
 		m_NeedEncoderReset=true;
 		m_gyro.reset();
+		resetEncoders();
 	}
 
 	/**
@@ -176,6 +184,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		m_LidSolenoid.set(DoubleSolenoid.Value.kForward);  // open the lid
 		m_autoSelected = m_AutoChooser.getSelected();
 		m_LightsRelay.set(Relay.Value.kForward);
 		double distanceFL = m_encoderFL.getDistance();
@@ -269,6 +278,7 @@ public class Robot extends IterativeRobot {
 			}
 			break;
 		}
+		showInstrumentation();
 	}
 
 	@Override
@@ -283,14 +293,14 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
-		m_ShowInstrumentation = m_DisplayDataChooser.getSelected();
 		m_JoyToggle = m_ControllerChooser.getSelected();
-		m_ResetGyro = m_GyroResetChooser.getSelected();
+		m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		if (m_ResetGyro){
+			m_gyro.reset();
+			SmartDashboard.putBoolean("gyroReset", false);
+		}
 		Relay.Value light=Relay.Value.kOff; //10.9.57.73
 		
-		if(m_ResetGyro) {
-			m_gyro.reset();
-		}
 		if(m_NavController.getPOV() == 0){//Main
 			m_CameraSwitch = 1;
 		}
@@ -299,21 +309,11 @@ public class Robot extends IterativeRobot {
 		}
 		if(m_NavController.getPOV() == 270){//Gear
 			m_CameraSwitch = 2;
-		}
-			
-			
+		}			
 			Pi_RioCom.putNumber("X20", m_CameraSwitch);
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(m_JoyToggle){
-	        case 0://Dual Joystick tank
-	        	m_rotation = (((m_Joy2.getRawAxis(1))-(m_Joy1.getRawAxis(1)))/2);
-        		m_driveX = (((m_Joy1.getRawAxis(0))+(m_Joy2.getRawAxis(0)))/2);
-        		m_driveY = (((m_Joy1.getRawAxis(1))+(m_Joy2.getRawAxis(1)))/2);
-        		m_DriveModeSwitch = (m_Joy1.getRawButton(3));
-        		m_POVFinal = m_Joy1.getPOV();
-        		autoButton = (m_Joy1.getRawButton(3));
-	        	break;
-			 case 1://Single Joystick
+			 case 0://Single Joystick
 				m_rotation = (m_Joy1.getRawAxis(2));
 				m_driveX = (m_Joy1.getRawAxis(0));
 				m_driveY = (m_Joy1.getRawAxis(1));
@@ -321,7 +321,7 @@ public class Robot extends IterativeRobot {
 				m_POVFinal = m_Joy1.getPOV();
 				autoButton = (m_Joy1.getRawButton(3));
 			 	break;
-			 case 2://Xbox Controller
+			 case 1://Xbox Controller
 		        m_rotation = (((m_DriveController.getRawAxis(5))-(m_DriveController.getRawAxis(1)))/2);
         		m_driveX = (((m_DriveController.getRawAxis(0))+(m_DriveController.getRawAxis(4)))/2);
         		m_driveY = (((m_DriveController.getRawAxis(1))+(m_DriveController.getRawAxis(5)))/2);
@@ -371,26 +371,26 @@ public class Robot extends IterativeRobot {
 		m_LidModeSwitch = (m_NavController.getRawButton(2));
  		
 		switch(m_LidToggle){
-			case 0://GyroDrive is in use, waiting for button to be pressed
-				m_LidDouble.set(DoubleSolenoid.Value.kForward);
+			case 0://Lid is up, waiting for button to be pressed
+				m_LidSolenoid.set(DoubleSolenoid.Value.kForward);
 				if(m_LidModeSwitch)//Waiting for button press
 					m_LidToggle = 1;
 				m_LidMode = "Up";
 				break;
-			case 1://Drive 2 selected, waiting for release
-				m_LidDouble.set(DoubleSolenoid.Value.kReverse);
+			case 1://Lid is down, waiting for release
+				m_LidSolenoid.set(DoubleSolenoid.Value.kReverse);
 				if(!m_LidModeSwitch)//Waiting for button release
 					m_LidToggle = 2;
 				m_LidMode = "Down";
 				break;
-			case 2://Drive 2 selected, looking for pressed
-				m_LidDouble.set(DoubleSolenoid.Value.kReverse);
+			case 2://Lid is down, looking for pressed
+				m_LidSolenoid.set(DoubleSolenoid.Value.kReverse);
 				if(m_LidModeSwitch)//Waiting for button press
 					m_LidToggle = 3;
 				m_LidMode = "Down";
 				break;
-			case 3://GyroDrive is in use, looking for release
-				m_LidDouble.set(DoubleSolenoid.Value.kForward);
+			case 3://Lid is up, looking for release
+				m_LidSolenoid.set(DoubleSolenoid.Value.kForward);
 				if(!m_LidModeSwitch)//Waiting for button release
 					m_LidToggle = 0;
 				m_LidMode = "Up";
@@ -425,7 +425,60 @@ public class Robot extends IterativeRobot {
 	        }   
 	    }
 
-        if(m_ShowInstrumentation){
+
+		if(AutoAimEnabled){
+			m_LightsRelay.set(Relay.Value.kForward);
+			Auto.AutoDetect();
+			double XFinal = Auto.acceptedXFinal();
+			AutoDrive(0.233,XFinal);
+		}else{
+			//using field orientation using the gyro vs normal drive
+			m_LightsRelay.set(light);
+			switch(m_DriveToggle){
+				case 0://GyroDrive is in use, waiting for button to be pressed
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+					if(m_DriveModeSwitch)//Waiting for button press
+						m_DriveToggle = 1;
+					break;
+				case 1://Drive 2 selected, waiting for release
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
+					if(!m_DriveModeSwitch)//Waiting for button release
+						m_DriveToggle = 2;
+					m_DriveMode = "Robot Oriented";
+					break;
+				case 2://Drive 2 selected, looking for pressed
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
+					if(m_DriveModeSwitch)//Waiting for button press
+						m_DriveToggle = 3;
+					break;
+				case 3://GyroDrive is in use, looking for release
+					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+					if(!m_DriveModeSwitch)//Waiting for button release
+						m_DriveToggle = 0;
+					m_DriveMode = "Field Oriented";
+					break;
+			}
+		}
+		showInstrumentation();
+		}	
+	
+	/**
+	 * This function is called periodically during test mode
+	 */
+	@Override
+	public void testPeriodic() {
+	}
+	
+	public void showInstrumentation() {
+		// We always want to display these values.
+		double roundedGyro = (m_gyro.getAngle() % 360) * 10  ;
+		roundedGyro = Math.round(roundedGyro); 
+		roundedGyro = roundedGyro / 10;
+		SmartDashboard.putNumber("gyroValue",roundedGyro);
+		SmartDashboard.putString("lidStatus",m_LidMode );
+		SmartDashboard.putString("driveMode",m_DriveMode );
+		SmartDashboard.putString("autoAim",m_TeleAuto);
+        if(m_ShowAllData){
 			SmartDashboard.putNumber("Joy Toggle value",m_JoyToggle);
 
 			int countFL = m_encoderFL.get();
@@ -460,56 +513,8 @@ public class Robot extends IterativeRobot {
 			SmartDashboard.putNumber("Drive Y value",m_driveY);
 	        SmartDashboard.putNumber("Drive Rotation value",m_rotation);
 			SmartDashboard.putNumber("Drive X value",m_driveX);
-		}
-		if(AutoAimEnabled){
-			m_LightsRelay.set(Relay.Value.kForward);
-			Auto.AutoDetect();
-			double XFinal = Auto.acceptedXFinal();
-			AutoDrive(0.233,XFinal);
-		}else{
-			//using field orientation using the gyro vs normal drive
-			m_LightsRelay.set(light);
-			switch(m_DriveToggle){
-				case 0://GyroDrive is in use, waiting for button to be pressed
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-					if(m_DriveModeSwitch)//Waiting for button press
-						m_DriveToggle = 1;
-					break;
-				case 1://Drive 2 selected, waiting for release
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
-					if(!m_DriveModeSwitch)//Waiting for button release
-						m_DriveToggle = 2;
-					m_DriveMode = "Robot Oriented";
-					break;
-				case 2://Drive 2 selected, looking for pressed
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
-					if(m_DriveModeSwitch)//Waiting for button press
-						m_DriveToggle = 3;
-					break;
-				case 3://GyroDrive is in use, looking for release
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-					if(!m_DriveModeSwitch)//Waiting for button release
-						m_DriveToggle = 0;
-					m_DriveMode = "Field Oriented";
-					break;
-			}
-		}
-		// We always want to display these values.
-		double roundedGyro = (m_gyro.getAngle() % 360) * 10  ;
-		roundedGyro = Math.round(roundedGyro); 
-		roundedGyro = roundedGyro / 10;
-		SmartDashboard.putNumber("Gyro value",roundedGyro);
-		SmartDashboard.putString("Lid Status",m_LidMode );
-		SmartDashboard.putString("Drive mode",m_DriveMode );
-		SmartDashboard.putString("Auto Aim",m_TeleAuto);
 		}	
-	
-	/**
-	 * This function is called periodically during test mode
-	 */
-	@Override
-	public void testPeriodic() {
-	}
+    }
 	
 	public void resetEncoders(){
 		m_encoderFL.reset();
