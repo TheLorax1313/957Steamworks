@@ -13,13 +13,14 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 public class AutonomusFinder {
 	double acceptedXFinal = -666;
 	double acceptedYFinal = -666;
+	double acceptedXFinal_ret = -666;
 	NetworkTable PiVision;
 	double contourCounter = 0;
 	double acceptedContour1;
 	double acceptedContour2;
 	double minAR = 2.0;
 	double maxAR = 3;
-	double CameraResX = 340;
+	double CameraResX = 320;
 	double CameraResY= 280;
 	double distance;
 	double trueHeight = 5;
@@ -27,6 +28,7 @@ public class AutonomusFinder {
 	double FOV = 69;
 	double DashboardDistance;
 	double botHeight =  19.25; //minus tape height
+	int skew = 10;
 	public void distanceInit(){
 		distance = 80; //this is to give the variable distance an initial 
 		//value that won't be given again during Auto to make it so there 
@@ -127,9 +129,9 @@ public class AutonomusFinder {
 				acceptedX2 = x3;
 				acceptedY2 = y3;
 			}
-			acceptedXFinal = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2) + 25;
+			acceptedXFinal_ret = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2) + skew;
 			acceptedYFinal = ((acceptedY1 + acceptedY2)/2) - ((CameraResY)/2);	
-			
+			acceptedXFinal = ((acceptedX1 + acceptedX2)/2) - ((CameraResX)/2);
 			double widthPixels = Math.abs(acceptedX1 - acceptedX2);
 			double objectFOV_Tri = ((widthPixels/CameraResX)*FOV)/2;
 			double hyp = (trueWidth/2)/(Math.tan(objectFOV_Tri)) ;
@@ -157,7 +159,7 @@ public class AutonomusFinder {
 	}
 	
 	public double acceptedXFinal() {
-		return acceptedXFinal;
+		return acceptedXFinal_ret;
 	}
 	public double acceptedYFinal() {
 		return acceptedYFinal;

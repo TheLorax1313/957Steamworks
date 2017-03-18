@@ -236,7 +236,7 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 30){
+					if(avgDistance <= 36){
 						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
@@ -262,7 +262,7 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 85){
+					if(avgDistance <= 36){//85
 						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
@@ -594,7 +594,7 @@ public class Robot extends IterativeRobot {
 	public void AutoDrive(double speed, double XFinal){
 		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
-			if(XFinal < 5 && XFinal > -5){
+			if(XFinal < 10 && XFinal > -10){
 				m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);
 			}else{
 				if(XFinal < 0){
