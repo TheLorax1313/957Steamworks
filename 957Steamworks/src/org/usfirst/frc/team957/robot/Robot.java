@@ -195,8 +195,6 @@ public class Robot extends IterativeRobot {
 		Auto.AutoDetect();
 		double XFinal = Auto.acceptedXFinal();
 		double YFinal = Auto.acceptedYFinal();
-		SmartDashboard.putNumber("Selected",m_autoSelected);
-		SmartDashboard.putNumber("Step",m_autoCase);
 		switch (m_autoSelected) {
 		case 0://Do Nothing (currently has test code for distance,
 			//is commented out
@@ -310,7 +308,8 @@ public class Robot extends IterativeRobot {
 		if(m_NavController.getPOV() == 270){//Gear
 			m_CameraSwitch = 2;
 		}			
-			Pi_RioCom.putNumber("X20", m_CameraSwitch);
+		Pi_RioCom.putNumber("X20", m_CameraSwitch);
+		
 		//Drive Code for each controller type selected by Java Dashboard
 		switch(m_JoyToggle){
 			 case 0://Single Joystick
@@ -478,6 +477,9 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putString("lidStatus",m_LidMode );
 		SmartDashboard.putString("driveMode",m_DriveMode );
 		SmartDashboard.putString("autoAim",m_TeleAuto);
+		// Values to show what is going on in Auto. 
+		SmartDashboard.putNumber("Selected",m_autoSelected);
+		SmartDashboard.putNumber("Step",m_autoCase);
         if(m_ShowAllData){
 			SmartDashboard.putNumber("Joy Toggle value",m_JoyToggle);
 
