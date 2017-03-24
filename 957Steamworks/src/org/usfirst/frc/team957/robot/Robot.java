@@ -32,6 +32,7 @@ public class Robot extends IterativeRobot {
 	int m_autoSelected;
 	SendableChooser<Integer> m_AutoChooser;
 	SendableChooser<Integer> m_ControllerChooser;
+	SendableChooser<Boolean> m_GyroResetChooser;
 	//Joystick Defining
 	Joystick m_Joy1 = new Joystick(1); //flight stick 1
 	Joystick m_DriveController = new Joystick(0); //controller
@@ -106,6 +107,10 @@ public class Robot extends IterativeRobot {
 		m_ControllerChooser.addObject("360 Controller",1);		
 		SmartDashboard.putData("controllerChooser",m_ControllerChooser);
 
+		m_GyroResetChooser = new SendableChooser<Boolean>();
+		m_GyroResetChooser.addDefault("waiting",false);
+		m_GyroResetChooser.addObject("Reset",true);
+		SmartDashboard.putData("Gyro Reset",m_GyroResetChooser);
 		m_speedSwitch = 1;
 		m_DriveToggle = 0;
 		m_LidToggle = 0;
@@ -142,6 +147,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void disabledInit() {
+		//m_gyro.reset();
 	}
 
 	/**
@@ -149,10 +155,11 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void disabledPeriodic() {
-		m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		//m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		m_ResetGyro = m_GyroResetChooser.getSelected();
 		if (m_ResetGyro){
 			m_gyro.reset();
-			SmartDashboard.putBoolean("gyroReset", false);
+			//SmartDashboard.putBoolean("gyroReset", false);
 		}
 		m_JoyToggle = m_ControllerChooser.getSelected();
 		m_autoSelected = m_AutoChooser.getSelected();
@@ -292,10 +299,11 @@ public class Robot extends IterativeRobot {
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
 		m_JoyToggle = m_ControllerChooser.getSelected();
-		m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		m_ResetGyro = m_GyroResetChooser.getSelected();
+		//m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
 		if (m_ResetGyro){
 			m_gyro.reset();
-			SmartDashboard.putBoolean("gyroReset", false);
+			//SmartDashboard.putBoolean("gyroReset", false);
 		}
 		Relay.Value light=Relay.Value.kOff; //10.9.57.73
 		
