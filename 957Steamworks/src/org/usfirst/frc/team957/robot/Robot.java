@@ -237,15 +237,16 @@ public class Robot extends IterativeRobot {
 					}
 					break;
 				case 2:
+					m_Drive.mecanumDrive_Cartesian(0,0,0,m_gyro.getAngle());
 					resetEncoders();
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 36){
-						AutoDrive(0.233,XFinal);
+				/**	if(avgDistance <= 50){
+						//AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
-					}
+					} */
 				break;
 				}			
 			break;
@@ -263,20 +264,21 @@ public class Robot extends IterativeRobot {
 					}
 					break;
 				case 2:
+					m_Drive.mecanumDrive_Cartesian(0,0,0,m_gyro.getAngle());
 					resetEncoders();
 					m_autoCase = 3;
 					break;
 				case 3:
-					if(avgDistance <= 36){//85
-						AutoDrive(0.233,XFinal);
+					/**if(avgDistance <= 50){//85
+					//	AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
-					}
+					}*/
 				break;
 				}			
 			break;
 		case 4://Drive forward
-			if((avgDistance <= 80)){
+			if((avgDistance <= 85)){
 				AutoDrive(0.233,XFinal);
 			}else{
 				AutoDrive(0,0);
@@ -424,11 +426,11 @@ public class Robot extends IterativeRobot {
 	 		m_driveY = 0;
 	 		 //left
 	        if(m_POVFinal == 90){
-	        	m_driveX = m_speedMultiplier; 
+	        	m_driveX = m_speedMultiplier/2; 
 	        }	
 	        //right
 	        if(m_POVFinal == 270){
-	        	m_driveX = -m_speedMultiplier; 
+	        	m_driveX = -m_speedMultiplier/2; 
 	        }   
 	    }
 

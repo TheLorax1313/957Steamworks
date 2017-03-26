@@ -18,8 +18,8 @@ public class AutonomusFinder {
 	double contourCounter = 0;
 	double acceptedContour1;
 	double acceptedContour2;
-	double minAR = 2.0;
-	double maxAR = 3;
+	double minAR = 2.25;
+	double maxAR = 2.75;
 	double CameraResX = 320;
 	double CameraResY= 280;
 	double distance;
