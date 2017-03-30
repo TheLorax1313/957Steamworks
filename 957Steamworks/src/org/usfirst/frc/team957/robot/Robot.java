@@ -418,12 +418,46 @@ public class Robot extends IterativeRobot {
         }
         
         if(m_POVFinal == -1){
+        	// We are not POV strafing
 	        // Allow for speed multiplier to control maximum speed. 
 	        m_driveX = m_driveX * m_speedMultiplier; 
 	        m_driveY = m_driveY * m_speedMultiplier; 
 	        m_rotation = m_rotation * m_speedMultiplier; 	
-	 	}else{
-	 		m_driveY = 0;
+	        
+			if(AutoAimEnabled){
+				m_LightsRelay.set(Relay.Value.kForward);
+				Auto.AutoDetect();
+				double XFinal = Auto.acceptedXFinal();
+				AutoDrive(0.233,XFinal);
+			}else{
+				//using field orientation using the gyro vs normal drive
+				m_LightsRelay.set(light);
+				switch(m_DriveToggle){
+					case 0://GyroDrive is in use, waiting for button to be pressed
+						m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+						if(m_DriveModeSwitch)//Waiting for button press
+							m_DriveToggle = 1;
+						break;
+					case 1://Drive 2 selected, waiting for release
+						m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
+						if(!m_DriveModeSwitch)//Waiting for button release
+							m_DriveToggle = 2;
+						m_DriveMode = "Robot Oriented";
+						break;
+					case 2://Drive 2 selected, looking for pressed
+						m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
+						if(m_DriveModeSwitch)//Waiting for button press
+							m_DriveToggle = 3;
+						break;
+					case 3://GyroDrive is in use, looking for release
+						m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
+						if(!m_DriveModeSwitch)//Waiting for button release
+							m_DriveToggle = 0;
+						m_DriveMode = "Field Oriented";
+						break;
+				}
+			}
+        }else{
 	 		 //left
 	        if(m_POVFinal == 90){
 	        	m_driveX = m_speedMultiplier/2; 
@@ -432,42 +466,9 @@ public class Robot extends IterativeRobot {
 	        if(m_POVFinal == 270){
 	        	m_driveX = -m_speedMultiplier/2; 
 	        }   
+			m_Drive.mecanumDrive_Cartesian(m_driveX,0,0,0);
 	    }
 
-
-		if(AutoAimEnabled){
-			m_LightsRelay.set(Relay.Value.kForward);
-			Auto.AutoDetect();
-			double XFinal = Auto.acceptedXFinal();
-			AutoDrive(0.233,XFinal);
-		}else{
-			//using field orientation using the gyro vs normal drive
-			m_LightsRelay.set(light);
-			switch(m_DriveToggle){
-				case 0://GyroDrive is in use, waiting for button to be pressed
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-					if(m_DriveModeSwitch)//Waiting for button press
-						m_DriveToggle = 1;
-					break;
-				case 1://Drive 2 selected, waiting for release
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
-					if(!m_DriveModeSwitch)//Waiting for button release
-						m_DriveToggle = 2;
-					m_DriveMode = "Robot Oriented";
-					break;
-				case 2://Drive 2 selected, looking for pressed
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,0);
-					if(m_DriveModeSwitch)//Waiting for button press
-						m_DriveToggle = 3;
-					break;
-				case 3://GyroDrive is in use, looking for release
-					m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
-					if(!m_DriveModeSwitch)//Waiting for button release
-						m_DriveToggle = 0;
-					m_DriveMode = "Field Oriented";
-					break;
-			}
-		}
 		showInstrumentation();
 		}	
 	
@@ -583,7 +584,7 @@ public class Robot extends IterativeRobot {
 	
 	public boolean turnXDegrees(int Turn,double TurnPower){
 		boolean retVal=false;
-		if (m_storedValueTF=false){
+		if (!m_storedValueTF){
 			m_storedAngle=(int) m_gyro.getAngle();
 			m_storedValueTF=true;
 		}
@@ -591,6 +592,7 @@ public class Robot extends IterativeRobot {
 			if (m_gyro.getAngle() > m_storedAngle + Turn){
 			m_storedValueTF=false;
 			retVal=true;
+			TurnPower=0;
 			}
 		}
 		if (!m_autoTurnRight){
@@ -598,6 +600,7 @@ public class Robot extends IterativeRobot {
 			if (m_gyro.getAngle() < m_storedAngle - Turn){
 			m_storedValueTF=false;
 			retVal=true;
+			TurnPower=0;
 			}
 		}
 		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
