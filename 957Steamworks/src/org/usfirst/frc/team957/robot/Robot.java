@@ -31,11 +31,9 @@ public class Robot extends IterativeRobot {
 	int m_autoState;
 	int m_autoSelected;
 	SendableChooser<Integer> m_AutoChooser;
-	SendableChooser<Integer> m_ControllerChooser;
 	SendableChooser<Boolean> m_GyroResetChooser;
 	//Joystick Defining
 	Joystick m_Joy1 = new Joystick(1); //flight stick 1
-	Joystick m_DriveController = new Joystick(0); //controller
 	Joystick m_NavController = new Joystick(3); //controller
 	CANTalon m_fl = new CANTalon(2);
 	CANTalon m_bl = new CANTalon(3);
@@ -102,11 +100,6 @@ public class Robot extends IterativeRobot {
 		m_AutoChooser.addObject("Forward", m_Forward);
 		SmartDashboard.putData("autoChoices", m_AutoChooser);
 
-		m_ControllerChooser = new SendableChooser<Integer>();
-		m_ControllerChooser.addDefault("Single JoySticks",0);
-		m_ControllerChooser.addObject("360 Controller",1);		
-		SmartDashboard.putData("controllerChooser",m_ControllerChooser);
-
 		m_GyroResetChooser = new SendableChooser<Boolean>();
 		m_GyroResetChooser.addDefault("waiting",false);
 		m_GyroResetChooser.addObject("Reset",true);
@@ -161,7 +154,6 @@ public class Robot extends IterativeRobot {
 			m_gyro.reset();
 			//SmartDashboard.putBoolean("gyroReset", false);
 		}
-		m_JoyToggle = m_ControllerChooser.getSelected();
 		m_autoSelected = m_AutoChooser.getSelected();
 		showInstrumentation();
 	}
@@ -278,7 +270,7 @@ public class Robot extends IterativeRobot {
 				}			
 			break;
 		case 4://Drive forward
-			if((avgDistance <= 85)){
+			if((avgDistance >= -1)){
 				AutoDrive(0.233,XFinal);
 			}else{
 				AutoDrive(0,0);
@@ -300,7 +292,6 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
-		m_JoyToggle = m_ControllerChooser.getSelected();
 		m_ResetGyro = m_GyroResetChooser.getSelected();
 		//m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
 		if (m_ResetGyro){
@@ -310,7 +301,7 @@ public class Robot extends IterativeRobot {
 		Relay.Value light=Relay.Value.kOff; //10.9.57.73
 		
 		if(m_NavController.getPOV() == 0){//Main
-			m_CameraSwitch = 1;
+			m_CameraSwitch = 0;
 		}
 		if(m_NavController.getPOV() == 180){//Back
 			m_CameraSwitch = 4;
@@ -321,25 +312,12 @@ public class Robot extends IterativeRobot {
 		Pi_RioCom.putNumber("X20", m_CameraSwitch);
 		
 		//Drive Code for each controller type selected by Java Dashboard
-		switch(m_JoyToggle){
-			 case 0://Single Joystick
 				m_rotation = (m_Joy1.getRawAxis(2));
 				m_driveX = (m_Joy1.getRawAxis(0));
 				m_driveY = (m_Joy1.getRawAxis(1));
 				m_DriveModeSwitch = (m_Joy1.getRawButton(2));
 				m_POVFinal = m_Joy1.getPOV();
 				autoButton = (m_Joy1.getRawButton(3));
-			 	break;
-			 case 1://Xbox Controller
-		        m_rotation = (((m_DriveController.getRawAxis(5))-(m_DriveController.getRawAxis(1)))/2);
-        		m_driveX = (((m_DriveController.getRawAxis(0))+(m_DriveController.getRawAxis(4)))/2);
-        		m_driveY = (((m_DriveController.getRawAxis(1))+(m_DriveController.getRawAxis(5)))/2);
-                //If the controller input is less than our threshold then make it equal to 0
-        		m_POVFinal = m_DriveController.getPOV();
-        		m_DriveModeSwitch = (m_DriveController.getRawButton(7));
-        		autoButton = (m_DriveController.getRawButton(3));
-		        break;
-		}
 		
 		switch(m_autoTarget){
 		case 0:
