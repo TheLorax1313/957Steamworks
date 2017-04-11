@@ -85,13 +85,14 @@ public class Robot extends IterativeRobot {
 	double m_distance;
 	double m_prevDistance;
 	double m_distanceLeft;
+	
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
 	 */
 	@Override
 	public void robotInit() {
-		
+		Pi_RioCom.putNumber("X21", 1);
 		m_AutoChooser = new SendableChooser<Integer>();
 		m_AutoChooser.addDefault("Do Nothing", m_DoNothing);
 		m_AutoChooser.addObject("Cross the Line", m_CrosstheLine);
@@ -133,6 +134,7 @@ public class Robot extends IterativeRobot {
         Auto.distanceInit();
         m_distance = 80;
         m_prevDistance = 80;
+        Pi_RioCom.putNumber("X22", 1);
 	}
 
 	/**
@@ -183,6 +185,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
+		Pi_RioCom.putNumber("X21", 2);
 		m_LidSolenoid.set(DoubleSolenoid.Value.kForward);  // open the lid
 		m_autoSelected = m_AutoChooser.getSelected();
 		m_LightsRelay.set(Relay.Value.kForward);
@@ -195,21 +198,8 @@ public class Robot extends IterativeRobot {
 		double XFinal = Auto.acceptedXFinal();
 		double YFinal = Auto.acceptedYFinal();
 		switch (m_autoSelected) {
-		case 0://Do Nothing (currently has test code for distance,
-			//is commented out
-			/*
-			m_distance = Auto.distance();
-			if(!(m_prevDistance == m_distance)){
-				resetEncoders();
-				m_prevDistance = m_distance;
-			}
-			m_distanceLeft = (m_distance + 5) - avgDistance;
-			if(m_distanceLeft >= 0){
-				AutoDrive(0.35,XFinal);
-			}else{
-				AutoDrive(0,0);
-			}
-			*/
+		case 0://Do Nothing 
+			
 			default:
 			break;
 		case 1://Cross the line
@@ -290,6 +280,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
+		Pi_RioCom.putNumber("X21", 3);
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
 		m_ResetGyro = m_GyroResetChooser.getSelected();
@@ -301,13 +292,13 @@ public class Robot extends IterativeRobot {
 		Relay.Value light=Relay.Value.kOff; //10.9.57.73
 		
 		if(m_NavController.getPOV() == 0){//Main
-			m_CameraSwitch = 0;
+			m_CameraSwitch = 1;
 		}
 		if(m_NavController.getPOV() == 180){//Back
-			m_CameraSwitch = 4;
+			m_CameraSwitch = 2;
 		}
 		if(m_NavController.getPOV() == 270){//Gear
-			m_CameraSwitch = 2;
+			m_CameraSwitch = 3;
 		}			
 		Pi_RioCom.putNumber("X20", m_CameraSwitch);
 		

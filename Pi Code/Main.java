@@ -36,7 +36,7 @@ public class Main {
 		UsbCamera camera1 = new UsbCamera("Camera1", 1); //Gear Camera
 		UsbCamera camera2 = new UsbCamera("Camera2", 2); //Back Camera
 		camera0.setResolution(320,280);
-		camera1.setResolution(340,260);
+		camera1.setResolution(260,340);
 		camera2.setResolution(200,150);
 		camera1.setFPS(15);
 		camera2.setFPS(15);
@@ -87,12 +87,12 @@ public class Main {
 			
 			if(programMode == 1){ //RobotInit
 				inputStreamDS.setSource(camera0);
-				Pi_RioCom.putNumber("X20", 0);
+				Pi_RioCom.putNumber("X20", 1);
 			}
 
 			if(programMode == 2){ //Autonomus
 				inputStreamDS.setSource(camera1);
-				Pi_RioCom.putNumber("X20", 1);
+				Pi_RioCom.putNumber("X20", 2);
 			}
 
 			if(programMode == 3){ //Tele-Op
@@ -113,23 +113,13 @@ public class Main {
 
 			if(programMode == 4){ //Disabled
 				
-				cameraSwitch = Pi_RioCom.getNumber("X20", 1);
-				if(cameraSwitch == 1){//Main
-					inputStreamDS.setSource(camera0);
-				}
-				
-				if(cameraSwitch == 2){//Gear
-					inputStreamDS.setSource(camera1);
-				}
-				
-				if(cameraSwitch == 3){//Back
-					inputStreamDS.setSource(camera2);
-				}
+				inputStreamDS.setSource(camera0);
+				Pi_RioCom.putNumber("X20", 1);
 			}
 
 			if(programMode == -1){ //Used if no Rio is detected, fallback state
 				inputStreamDS.setSource(camera0);
-				Pi_RioCom.putNumber("X20", 0);
+				Pi_RioCom.putNumber("X20", 1);
 			}
 
 			if(visionProcessing == 1){

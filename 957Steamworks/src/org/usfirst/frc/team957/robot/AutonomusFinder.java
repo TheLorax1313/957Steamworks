@@ -36,6 +36,7 @@ public class AutonomusFinder {
 	}
 	public void AutoDetect(){
 		NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
+		Pi_RioCom.putNumber("X22", 1);
 		acceptedXFinal = -666;
 		acceptedYFinal = -666;
 		acceptedXFinal_ret = -666;
