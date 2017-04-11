@@ -223,7 +223,7 @@ public class Robot extends IterativeRobot {
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(45,0.3)){
+					if(turnToHeading(45,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -234,11 +234,11 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-				/**	if(avgDistance <= 50){
-						//AutoDrive(0.233,XFinal);
+				if(avgDistance <= 50){
+						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
-					} */
+					} 
 				break;
 				}			
 			break;
@@ -250,7 +250,7 @@ public class Robot extends IterativeRobot {
 						m_autoCase=1;
 					break;
 				case 1:
-					if(turnXDegrees(45,0.3)){
+					if(turnToHeading(-45,0.3)){
 						m_NeedEncoderReset=true;
 						m_autoCase=2;
 					}
@@ -261,16 +261,16 @@ public class Robot extends IterativeRobot {
 					m_autoCase = 3;
 					break;
 				case 3:
-					/**if(avgDistance <= 50){//85
-					//	AutoDrive(0.233,XFinal);
+					if(avgDistance <= 50){
+						AutoDrive(0.233,XFinal);
 					}else{
 						AutoDrive(0,0);
-					}*/
+					}
 				break;
 				}			
 			break;
 		case 4://Drive forward
-			if((avgDistance >= -1)){
+			if((avgDistance <= 85)){
 				AutoDrive(0.233,XFinal);
 			}else{
 				AutoDrive(0,0);
@@ -584,10 +584,30 @@ public class Robot extends IterativeRobot {
 		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
 		return retVal;
 	}
+	
+	public boolean turnToHeading(int Heading,double TurnPower){
+		boolean retVal=false;
+		if (m_autoTurnRight){
+			if (m_gyro.getAngle() >= Heading){
+			retVal=true;
+			TurnPower=0;
+			}
+		}
+		if (!m_autoTurnRight){
+			TurnPower=-TurnPower;
+			if (m_gyro.getAngle() <= Heading){
+			retVal=true;
+			TurnPower=0;
+			}
+		}
+		m_Drive.mecanumDrive_Cartesian(0,0,TurnPower,m_gyro.getAngle());
+		return retVal;
+	}
+	
 	public void AutoDrive(double speed, double XFinal){
 		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
-			if(XFinal < 10 && XFinal > -10){
+			if(XFinal < 3 && XFinal > -3){
 				m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);
 			}else{
 				if(XFinal < 0){
