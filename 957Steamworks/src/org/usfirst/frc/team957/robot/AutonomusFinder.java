@@ -28,7 +28,7 @@ public class AutonomusFinder {
 	double FOV = 69;
 	double DashboardDistance;
 	double botHeight =  19.25; //minus tape height
-	int skew = 10;
+	int skew=0;
 	public void distanceInit(){
 		distance = 80; //this is to give the variable distance an initial 
 		//value that won't be given again during Auto to make it so there 
@@ -38,25 +38,26 @@ public class AutonomusFinder {
 		NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
 		acceptedXFinal = -666;
 		acceptedYFinal = -666;
+		acceptedXFinal_ret = -666;
 		contourCounter = 0;
 		acceptedContour1 = -1;
 		acceptedContour2 = -1;
 		boolean B_Distance;
 		
-		double x0 = Pi_RioCom.getNumber("X0",0);
-		double x1 = Pi_RioCom.getNumber("X1",2);
-		double x2 = Pi_RioCom.getNumber("X2",4);
-		double x3 = Pi_RioCom.getNumber("X3",6);
+		double x0 = Pi_RioCom.getNumber("X0",-666);
+		double x1 = Pi_RioCom.getNumber("X1",-666);
+		double x2 = Pi_RioCom.getNumber("X2",-666);
+		double x3 = Pi_RioCom.getNumber("X3",-666);
 		
-		double y0 = Pi_RioCom.getNumber("Y0",1);
-		double y1 = Pi_RioCom.getNumber("Y1",3);
-		double y2 = Pi_RioCom.getNumber("Y2",5);
-		double y3 = Pi_RioCom.getNumber("Y3",7);
+		double y0 = Pi_RioCom.getNumber("Y0",-666);
+		double y1 = Pi_RioCom.getNumber("Y1",-666);
+		double y2 = Pi_RioCom.getNumber("Y2",-666);
+		double y3 = Pi_RioCom.getNumber("Y3",-666);
 		
-		double width0 = Pi_RioCom.getNumber("X4",8);
-		double width1 = Pi_RioCom.getNumber("X5",9);
-		double width2 = Pi_RioCom.getNumber("X6",10);
-		double width3 = Pi_RioCom.getNumber("X7",11);
+		double width0 = Pi_RioCom.getNumber("X4",-666);
+		double width1 = Pi_RioCom.getNumber("X5",-666);
+		double width2 = Pi_RioCom.getNumber("X6",-666);
+		double width3 = Pi_RioCom.getNumber("X7",-666);
 		
 		double height0 = Pi_RioCom.getNumber("Y4",13);
 		double height1 = Pi_RioCom.getNumber("Y5",14);
@@ -72,7 +73,8 @@ public class AutonomusFinder {
 		double acceptedY1 = -1;
 		double acceptedY2 = -1;
 		
-		
+		SmartDashboard.putNumber("x1",x1);	
+		SmartDashboard.putNumber("x2",x2);	
 	
 		contourAccepted(x0,y0,height0,width0,0);
 		contourAccepted(x1,y1,height1,width1,1);
@@ -137,6 +139,8 @@ public class AutonomusFinder {
 			double hyp = (trueWidth/2)/(Math.tan(objectFOV_Tri)) ;
 			double distAng = Math.cos(botHeight/hyp);
 			distance = Math.tan(distAng)*botHeight;
+		}else{
+			acceptedXFinal_ret = -666;
 		}
 		
 		SmartDashboard.putNumber("distance",distance);	
