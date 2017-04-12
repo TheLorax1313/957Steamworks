@@ -78,7 +78,7 @@ public class Main {
 			*Ports between 0-19 are for vision data transfer.
 			*Ports between 20-29 are for Pi-Rio back and forth communications. 
 			 Use X for Rio to Pi communications and Y for Pi to Rio communications
-			 for this port range. Use X if the data is back and forth.
+			 for this port range. Use X or Y if the data is back and forth.
 			*30 and up are for use for whatever suits the team's needs, preferably
 			 not for transfering vision data.
 			*/
