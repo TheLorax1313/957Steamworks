@@ -131,10 +131,11 @@ public class Robot extends IterativeRobot {
         m_CameraSwitch = 0;
         
         Pi_RioCom.putNumber("X20", m_CameraSwitch);
-        Auto.distanceInit();
         m_distance = 80;
         m_prevDistance = 80;
         Pi_RioCom.putNumber("X22", 1);
+        Pi_RioCom.putNumber("X20", 1);
+		m_CameraSwitch = 1;
 	}
 
 	/**
@@ -143,6 +144,16 @@ public class Robot extends IterativeRobot {
 	@Override
 	public void disabledInit() {
 		//m_gyro.reset();
+		if(m_NavController.getPOV() == 0){//Main
+			m_CameraSwitch = 1;
+		}
+		if(m_NavController.getPOV() == 180){//Back
+			m_CameraSwitch = 2;
+		}
+		if(m_NavController.getPOV() == 270){//Gear
+			m_CameraSwitch = 3;
+		}			
+		Pi_RioCom.putNumber("X20", m_CameraSwitch);
 	}
 
 	/**
@@ -197,6 +208,9 @@ public class Robot extends IterativeRobot {
 		Auto.AutoDetect();
 		double XFinal = Auto.acceptedXFinal();
 		double YFinal = Auto.acceptedYFinal();
+		Pi_RioCom.putNumber("X20", 1);
+		m_CameraSwitch = 2;
+		
 		switch (m_autoSelected) {
 		case 0://Do Nothing 
 			
