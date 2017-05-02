@@ -32,27 +32,28 @@ public class Main {
                 ArrayList<MatOfPoint> gpArray = new ArrayList<MatOfPoint>();    //Starts contour counting variable
                 MjpegServer DSStream = new MjpegServer("DSStream", 1180);       //Starts main camera stream
 
-                UsbCamera camera0 = new UsbCamera("Camera0", 0);        //Starts Camera 0 and sets resolution
+                UsbCamera camera0 = new UsbCamera("Camera0", 0);        //Starts the front camera and sets resolution 
                 camera0.setResolution(320,240);
 
-                UsbCamera camera1 = new UsbCamera("Camera1", 1);        //Starts Camera 1, sets resolution, and sets framerate
+                UsbCamera camera1 = new UsbCamera("Camera1", 1);        //Starts the gear camera, sets resolution, and sets framerate
                 camera1.setResolution(320,240);
                 camera1.setFPS(10);
 
-                UsbCamera camera2 = new UsbCamera("Camera2", 2);        //Starts Camera 2, sets resolution, and sets framerate
+                UsbCamera camera2 = new UsbCamera("Camera2", 2);        //Starts the climber camera, sets resolution, and sets framerate
                 camera2.setResolution(320,240);
                 camera2.setFPS(10);
 
                 CvSink imageSink = new CvSink("CV Image Grabber");      //Starts a CV sink to pull camera footage into a MAT image file
-                imageSink.setSource(camera0);           //Sets CV sink to Camera 0
+                imageSink.setSource(camera0);           //Sets CV sink to the front camera
 
                 CvSource imageSource = new CvSource("CV Image Source", VideoMode.PixelFormat.kMJPEG, 640, 480, 30);     //Starts a CV Source to pass MATs into
-                MjpegServer cvStream = new MjpegServer("CV Image Stream", 1181);        //Starts a camera server and sets it to stream what is passed into the CV Source
+                MjpegServer cvStream = new MjpegServer("CV Image Stream", 1181);        //Starts a camera server and sets it to stream what is passed into the CV Source, the processed image, most likely
                 cvStream.setSource(imageSource);
 
                 Mat inputImage = new Mat();     //Defines a MAT to pass camera feed into, process, mark up, and stream again on the cvStream server
 //              Mat hsv = new Mat();
                 double m_CameraSwitch;          //Initializes variable stolen from the Rio to switch cameras on the main stream
+                double prevSwitch = -1;
 
                 double rectCenterX0;            //Initializes variables to send NetworkTables data to the Rio regarding contour information
                 double rectCenterX1;
@@ -77,19 +78,20 @@ public class Main {
                 while (true) {
                         m_CameraSwitch = Pi_RioCom.getNumber("X20",0);  //Gets networkTables information to set the main stream (1180) to whatever camera we want
                         
-                        if(m_CameraSwitch == 0){
+                        if(m_CameraSwitch == 0 && prevSwitch != m_CameraSwitch){
                                 DSStream.setSource(camera0);    //Sets camera to stream the drive cam
                         }
                         
-                        if(m_CameraSwitch == 2){
+                        if(m_CameraSwitch == 2 && !(prevSwitch == m_CameraSwitch)){
                                 DSStream.setSource(camera1);    //Stream Gear Cam
                         }
                         
-                        if(m_CameraSwitch == 4){
+                        if(m_CameraSwitch == 4 && !(prevSwitch == m_CameraSwitch)){
                                 DSStream.setSource(camera2);    //Steam Climber Cam
                         }
+                        prevSwitch = m_CameraSwitch;
 
-                        long frameTime = imageSink.grabFrame(inputImage);       //Grabs latest frame from the CV sink and pastes it into the InputImage MAT for processing.
+                        long frameTime = imageSink.grabFrame(inputImage);       //Grabs latest frame from the CV sink and pastes it into the InputImage MAT for processing. Also grabs framerate of the stream
                         
                         if (frameTime == 0){    //Skips whatever below if the framerate = 0
                                 continue;
