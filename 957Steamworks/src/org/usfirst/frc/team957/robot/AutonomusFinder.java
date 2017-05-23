@@ -65,7 +65,42 @@ public class AutonomusFinder {
 		contourAccepted(x1,y1,height1,width1,1);
 		contourAccepted(x2,y2,height2,width2,2);
 		contourAccepted(x3,y3,height3,width3,3);
+		
+		//If 1 contour found, runs code to attempt to align itself with the center of the the contour found.
+		//Aligns with the CONTOUR, not the peg. This shouldn't matter, as this code will only run when it doesn't
+		//see the second contour.
+		if(contourCounter == 1){	
 			
+			if(acceptedContour1 == 0){
+				acceptedWidth1 = width0;
+				acceptedHeight1 = height0;
+				acceptedX1 = x0;
+				acceptedY1 = y0;
+			}
+			if(acceptedContour1 == 1){
+				acceptedWidth1 = width1;
+				acceptedHeight1 = height1;
+				acceptedX1 = x1;
+				acceptedY1 = y1;
+			}
+			if(acceptedContour1 == 2){
+				acceptedWidth1 = width2;
+				acceptedHeight1 = height2;
+				acceptedX1 = x2;
+				acceptedY1 = y2;
+			}
+			if(acceptedContour1 == 3){
+				acceptedWidth1 = width3;
+				acceptedHeight1 = height3;
+				acceptedX1 = x3;
+				acceptedY1 = y3;
+			}
+			
+			acceptedXFinal = acceptedX1 - ((CameraResX)/2);	//Gives a variable that can be returned that can be used to drive to
+            acceptedYFinal = acceptedY1 - ((CameraResY)/2);    
+		}
+		
+		
 		if(contourCounter == 2){	//If 2 acceptable contours are found, runs code to put accepted contours to a common variable for additional processing
 			
 			if(acceptedContour1 == 0){
