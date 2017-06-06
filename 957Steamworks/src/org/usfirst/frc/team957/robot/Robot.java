@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.cscore.MjpegServer;
+import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
@@ -136,6 +138,16 @@ public class Robot extends IterativeRobot {
         Pi_RioCom.putNumber("X22", 1);
         Pi_RioCom.putNumber("X20", 1);
 		m_CameraSwitch = 1;
+		
+		//CAMERAS
+		UsbCamera driveCam = new UsbCamera("Drive Camera", 0);
+		UsbCamera gearCam = new UsbCamera("Gear Camera", 1);
+		MjpegServer stream1 = new MjpegServer("DSStream1", 1180);       //Starts main camera stream
+        MjpegServer stream2 = new MjpegServer("DSStream2", 1181); 
+		driveCam.setResolution(320,240);
+		gearCam.setResolution(160,120);
+		stream1.setSource(driveCam);
+		stream2.setSource(gearCam);
 	}
 
 	/**
@@ -299,6 +311,7 @@ public class Robot extends IterativeRobot {
 		boolean AutoAimEnabled = false;
 		m_ResetGyro = m_GyroResetChooser.getSelected();
 		//m_ResetGyro = SmartDashboard.getBoolean("gyroReset", false);
+		m_LightsRelay.set(Relay.Value.kForward);
 		if (m_ResetGyro){
 			m_gyro.reset();
 			//SmartDashboard.putBoolean("gyroReset", false);
@@ -408,13 +421,13 @@ public class Robot extends IterativeRobot {
 	        m_rotation = m_rotation * m_speedMultiplier; 	
 	        
 			if(AutoAimEnabled){
-				m_LightsRelay.set(Relay.Value.kForward);
+
 				Auto.AutoDetect();
 				double XFinal = Auto.acceptedXFinal();
 				AutoDrive(0.233,XFinal);
 			}else{
 				//using field orientation using the gyro vs normal drive
-				m_LightsRelay.set(light);
+
 				switch(m_DriveToggle){
 					case 0://GyroDrive is in use, waiting for button to be pressed
 						m_Drive.mecanumDrive_Cartesian(m_driveX,m_driveY,m_rotation,m_gyro.getAngle());
@@ -613,12 +626,12 @@ public class Robot extends IterativeRobot {
 		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
 			if(XFinal < 3 && XFinal > -3){
-				m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);
+				m_Drive.mecanumDrive_Cartesian(0,-speed*0.75,0,0);
 			}else{
 				if(XFinal < 0){
-					m_Drive.mecanumDrive_Cartesian((-speed*1.5),0,0,0);
+					m_Drive.mecanumDrive_Cartesian((-speed*1.25),0,0,0);
 				}else{
-					m_Drive.mecanumDrive_Cartesian((speed*1.5),0,0,0);
+					m_Drive.mecanumDrive_Cartesian((speed*1.25),0,0,0);
 				}				
 			}
 		}else{

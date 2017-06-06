@@ -26,8 +26,6 @@ public class AutonomusFinder {
 	
 	public void AutoDetect(){
 		Pi_RioCom.putNumber("X22", 1);	//Tells the Pi to process data (NOT IMPLETMENTED AT THIS TIME)
-		acceptedXFinal = -666;	//Resets the point to drive to to nil
-		acceptedYFinal = -666;
 		contourCounter = 0;	//Resets correct contours seen to zero
 		acceptedContour1 = -1;	//Sets accepted contours to nil
 		acceptedContour2 = -1;
