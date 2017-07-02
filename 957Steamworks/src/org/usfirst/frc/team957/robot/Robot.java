@@ -10,11 +10,16 @@ import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Spark;
+import org.opencv.core.Mat;
 import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.Relay;
+import edu.wpi.cscore.CvSink;
+import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.ADXRS450_Gyro;
+
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 
 /**
@@ -25,6 +30,7 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
  * directory.
  */
 public class Robot extends IterativeRobot {
+	
 	final int m_DoNothing = 0;
 	final int m_CrosstheLine = 1;
 	final int m_TurnRight = 2;
@@ -81,12 +87,12 @@ public class Robot extends IterativeRobot {
 	Boolean m_ShowAllData = false; 
 	AutonomusFinder Auto = new AutonomusFinder();
 	int m_autoTarget = 0;
-	//Vision Switching
-	NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
 	double m_CameraSwitch; 
 	double m_distance;
 	double m_prevDistance;
 	double m_distanceLeft;
+	stream streamCamera = new stream();
+	ledCommunication LED = new ledCommunication();
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -94,7 +100,6 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void robotInit() {
-		Pi_RioCom.putNumber("X21", 1);
 		m_AutoChooser = new SendableChooser<Integer>();
 		m_AutoChooser.addDefault("Do Nothing", m_DoNothing);
 		m_AutoChooser.addObject("Cross the Line", m_CrosstheLine);
@@ -130,24 +135,12 @@ public class Robot extends IterativeRobot {
         m_encoderFR.setDistancePerPulse(Math.PI*6/360);
         m_encoderBR.setDistancePerPulse(Math.PI*6/360);
         resetEncoders();
-        m_CameraSwitch = 0;
-        
-        Pi_RioCom.putNumber("X20", m_CameraSwitch);
         m_distance = 80;
         m_prevDistance = 80;
-        Pi_RioCom.putNumber("X22", 1);
-        Pi_RioCom.putNumber("X20", 1);
-		m_CameraSwitch = 1;
-		
-		//CAMERAS
-		UsbCamera driveCam = new UsbCamera("Drive Camera", 0);
-		UsbCamera gearCam = new UsbCamera("Gear Camera", 1);
-		MjpegServer stream1 = new MjpegServer("DSStream1", 1180);       //Starts main camera stream
-        MjpegServer stream2 = new MjpegServer("DSStream2", 1181); 
-		driveCam.setResolution(320,240);
-		gearCam.setResolution(160,120);
-		stream1.setSource(driveCam);
-		stream2.setSource(gearCam);
+		Auto.socketSetup(5800);
+		LED.socketSetup(5801);
+		streamCamera.start();
+
 	}
 
 	/**
@@ -155,17 +148,7 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void disabledInit() {
-		//m_gyro.reset();
-		if(m_NavController.getPOV() == 0){//Main
-			m_CameraSwitch = 1;
-		}
-		if(m_NavController.getPOV() == 180){//Back
-			m_CameraSwitch = 2;
-		}
-		if(m_NavController.getPOV() == 270){//Gear
-			m_CameraSwitch = 3;
-		}			
-		Pi_RioCom.putNumber("X20", m_CameraSwitch);
+		
 	}
 
 	/**
@@ -181,6 +164,10 @@ public class Robot extends IterativeRobot {
 		}
 		m_autoSelected = m_AutoChooser.getSelected();
 		showInstrumentation();
+		Auto.AutoDetect();
+		LED.updateAlliance();
+		LED.updateClimbingBoolean(false);
+		
 	}
 	
 	/**
@@ -208,7 +195,8 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void autonomousPeriodic() {
-		Pi_RioCom.putNumber("X21", 2);
+		LED.updateAlliance();
+		LED.updateClimbingBoolean(false);
 		m_LidSolenoid.set(DoubleSolenoid.Value.kForward);  // open the lid
 		m_autoSelected = m_AutoChooser.getSelected();
 		m_LightsRelay.set(Relay.Value.kForward);
@@ -220,8 +208,6 @@ public class Robot extends IterativeRobot {
 		Auto.AutoDetect();
 		double XFinal = Auto.acceptedXFinal();
 		double YFinal = Auto.acceptedYFinal();
-		Pi_RioCom.putNumber("X20", 1);
-		m_CameraSwitch = 2;
 		
 		switch (m_autoSelected) {
 		case 0://Do Nothing 
@@ -306,7 +292,9 @@ public class Robot extends IterativeRobot {
 	 */
 	@Override
 	public void teleopPeriodic() {
-		Pi_RioCom.putNumber("X21", 3);
+		LED.updateAlliance();
+		LED.updateClimbingBoolean(m_NavController.getRawAxis(3) > 0.5);
+		Auto.AutoDetect();
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
 		m_ResetGyro = m_GyroResetChooser.getSelected();
@@ -316,18 +304,6 @@ public class Robot extends IterativeRobot {
 			m_gyro.reset();
 			//SmartDashboard.putBoolean("gyroReset", false);
 		}
-		Relay.Value light=Relay.Value.kOff; //10.9.57.73
-		
-		if(m_NavController.getPOV() == 0){//Main
-			m_CameraSwitch = 1;
-		}
-		if(m_NavController.getPOV() == 180){//Back
-			m_CameraSwitch = 2;
-		}
-		if(m_NavController.getPOV() == 270){//Gear
-			m_CameraSwitch = 3;
-		}			
-		Pi_RioCom.putNumber("X20", m_CameraSwitch);
 		
 		//Drive Code for each controller type selected by Java Dashboard
 				m_rotation = (m_Joy1.getRawAxis(2));
@@ -421,8 +397,6 @@ public class Robot extends IterativeRobot {
 	        m_rotation = m_rotation * m_speedMultiplier; 	
 	        
 			if(AutoAimEnabled){
-
-				Auto.AutoDetect();
 				double XFinal = Auto.acceptedXFinal();
 				AutoDrive(0.233,XFinal);
 			}else{
@@ -456,11 +430,11 @@ public class Robot extends IterativeRobot {
         }else{
 	 		 //left
 	        if(m_POVFinal == 90){
-	        	m_driveX = m_speedMultiplier/2; 
+	        	m_driveX = m_speedMultiplier; 
 	        }	
 	        //right
 	        if(m_POVFinal == 270){
-	        	m_driveX = -m_speedMultiplier/2; 
+	        	m_driveX = -m_speedMultiplier; 
 	        }   
 			m_Drive.mecanumDrive_Cartesian(m_driveX,0,0,0);
 	    }
@@ -625,7 +599,7 @@ public class Robot extends IterativeRobot {
 	public void AutoDrive(double speed, double XFinal){
 		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
-			if(XFinal < 3 && XFinal > -3){
+			if(XFinal < 5 && XFinal > -5){
 				m_Drive.mecanumDrive_Cartesian(0,-speed*0.75,0,0);
 			}else{
 				if(XFinal < 0){
@@ -638,5 +612,39 @@ public class Robot extends IterativeRobot {
 			m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);		
 		}
 	}
+
+	public class stream extends Thread{
+		// Whatever you do, DO NOT use two of the same port number.
+		public void run(){
+				
+				int port = 1180;
+				UsbCamera camera1 = new UsbCamera("DC", 0);
+				camera1.setResolution(320, 240);
+
+				//Creates server for streaming camera. Name is
+				//local to the thread, but port # is not.
+				MjpegServer mjpegStream = new MjpegServer("MjpegStream port: "+port, port);       //Starts main camera stream
+				//Creates an image sink to feed the camera into
+				CvSink imageSink = new CvSink("imageSink port "+port); //Creates a CV image sink
+				imageSink.setSource(camera1);
+				//Creates a CV source to pump MATS into to stream
+				CvSource imageSource = new CvSource("CV Image Source", VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
+				mjpegStream.setSource(imageSource);
+				//Creates a MAT to add camera feed to
+				Mat inputImage = new Mat();
+				
+				//Streams the camera on selected port using OpenCV.
+				while(true){
+					
+					//Updates the Mat with feed info and checks framerate, and skips frame if error
+					long frameTime = imageSink.grabFrame(inputImage);
+	                if (frameTime == 0) {
+	                	continue;
+	                }
+	              //Puts the frame grabbed into the CV source attached to the mjpeg server, thereby streaming it
+	                imageSource.putFrame(inputImage); 
+				}
+		}
 	}
+}
 

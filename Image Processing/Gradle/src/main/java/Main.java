@@ -25,21 +25,15 @@ public class Main {
         public static void main(String[] args) throws Exception{
 
         System.loadLibrary("opencv_java310");
-        NetworkTable.setClientMode();
-        NetworkTable.setTeam(957);
-        NetworkTable.initialize();
-        NetworkTable Pi_RioCom = NetworkTable.getTable("datatable");
         
         GripPipeline gp = new GripPipeline();
-        GripPipelineGear gpGear = new GripPipelineGear();
+
         
-        UsbCamera driveCam = new UsbCamera("Camera0", 0);        //Starts the front camera and sets resolution 
+        HttpCamera driveCam = new HttpCamera("driveCam", "http://10.9.57.2:1180/stream.mjpg"); //Starts the front camera and sets resolution 
         driveCam.setResolution(320,280);
         driveCam.setFPS(10);
         
-        UsbCamera gearCam = new UsbCamera("Camera1", 1);        //Starts the gear camera, sets resolution, and sets framerate
-        gearCam.setResolution(320,280);
-        gearCam.setFPS(10);
+
 
         ArrayList<MatOfPoint> gpArray = new ArrayList<MatOfPoint>();
         ArrayList<MatOfPoint> gpArrayGear = new ArrayList<MatOfPoint>();
@@ -48,22 +42,16 @@ public class Main {
         CvSink imageSink = new CvSink("CV Image Grabber");
         imageSink.setSource(driveCam);
 
-        CvSink imageSinkGear = new CvSink("CV Image Grabber");
-        imageSinkGear.setSource(gearCam);
 
         CvSource imageSource = new CvSource("CV Image Source", VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
         MjpegServer cvStream = new MjpegServer("CV Image Stream", 1184);
         cvStream.setSource(imageSource);
 
-        CvSource imageSourceGear = new CvSource("CV Image Source Gear", VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
-        MjpegServer cvStreamGear = new MjpegServer("CV Image Stream Gear", 1185);
-        cvStreamGear.setSource(imageSourceGear);
-
         //Camera Servers
         MjpegServer dsStream1 = new MjpegServer("CV Image Stream", 1180);
-        MjpegServer dsStream2 = new MjpegServer("CV Image Stream", 1181);
+
         dsStream1.setSource(driveCam);
-        dsStream2.setSource(gearCam);
+
 
         Mat inputImage = new Mat();
         Mat gearImage = new Mat();
@@ -92,11 +80,11 @@ public class Main {
         while(clientSocket == null){
                 try{
                         //If the socket is present and can be connected to
-                        clientSocket = new Socket("10.9.57.2", 1189);
+                        clientSocket = new Socket("10.9.57.2", 5800);
                         System.out.println("SOCKET FOUND.");
                 }catch(Exception e){
                         //Ran if unable to connect to the socket
-                        System.out.println("SEARCHING FOR SOCKET 10.9.57.2:1189!!!");
+                        System.out.println("SEARCHING FOR SOCKET 10.9.57.2:5800!!!");
                         clientSocket = null;
                 }
         }
@@ -111,8 +99,8 @@ public class Main {
                          // Grab a frame. If it has a frame time of 0, there was an error.
                         // Just skip and continue
                         long frameTime = imageSink.grabFrame(inputImage);
-                        long frameTimeGear = imageSinkGear.grabFrame(gearImage);
-                        if (frameTime == 0 || frameTimeGear == 0) {
+
+                        if (frameTime == 0) {
                         continue;
                         }
 
@@ -196,15 +184,9 @@ public class Main {
                                 rectHeight3 = -9000;
                         }
 
-                        gpGear.process(gearImage);     //Processes whatever is in the InputImage Mat, even if it is mangled garbage
-                        gpArrayGear = gpGear.filterContoursOutput();    //Grabs from the GripPipeline class the contour information
-                        int gpLengthGear = gpArrayGear.size();          //Asks from gpArray how many contours were seen
-                        
-                        if(gpLengthGear > 0 && gpLengthGear < 2){
-                                gear = true;
-                        }
+
                         imageSource.putFrame(inputImage);    
-                        imageSourceGear.putFrame(gearImage);
+
                         //builds a data string to send to the Rio
                         String data = rectCenterX0 + "," + rectCenterX1 + "," + rectCenterX2 + "," + rectCenterX3 + "," + rectCenterY0 + "," + rectCenterY1 + "," + rectCenterY2 + "," + rectCenterY3 + "," + rectWidth0 + "," + rectWidth1 + "," + rectWidth2 + "," + rectWidth3 + "," + rectHeight0 + "," + rectHeight1 + "," + rectHeight2 + "," + rectHeight3 + "," + gear;
                         System.out.println(data);
