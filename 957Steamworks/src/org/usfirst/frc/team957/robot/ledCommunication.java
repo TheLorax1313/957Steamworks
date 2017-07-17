@@ -4,6 +4,9 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+
+import org.opencv.core.MatOfPoint;
 
 import edu.wpi.first.wpilibj.DriverStation;
 
@@ -22,15 +25,17 @@ public class ledCommunication {
 	// Data Init
 	String alliance = "Invalid";
 	String climbing = "false";
-	String gear = "false";
-	double xFinal = 2;
+	String gearData = "false";
+	
+	int xFinal = 2;
 	String data = "Invalid,false,false,2";
 	
 	// Socket Init
 	ServerSocket serverSocket = null;
-	
+	GripPipelineGear gpg = new GripPipelineGear();
 	// Thread init
 	clientManagement client = new clientManagement();
+
 	
 	public void socketSetup(int server){ // Activates a single client once comms are established
 		
@@ -67,19 +72,19 @@ public class ledCommunication {
 		}
 	}
 	
-	public void updateGearBoolean(boolean trigger){ // Updates if we have a gear
+	public void updateGearData(boolean trigger){ // Updates if we have a gear
 		if(trigger == true){
-			gear = "true ";
+			gearData = "true ";
 		}else{
-			gear = "false";
-		}								
+			gearData = "false";
+		}
 	}
 	
 	public void update_xFinal(double acceptedXFinal){ // Updates xFinal in data
-		if(acceptedXFinal > 20){
+		if(acceptedXFinal > 10 && acceptedXFinal != -666){
 			xFinal = 3;
 		}else{
-			if(acceptedXFinal < -20){
+			if(acceptedXFinal < -10 && acceptedXFinal != -666){
 				xFinal = 1;
 			}else{
 				xFinal = 2;
@@ -93,7 +98,7 @@ public class ledCommunication {
 			
 			Socket socketClient = null;
 			DataOutputStream output = null;
-			
+			ArrayList<MatOfPoint> gpgArray = new ArrayList<MatOfPoint>();
 			while(socketClient == null){ // Attempts until client is found
 				try {
 					socketClient = serverSocket.accept();
@@ -116,12 +121,9 @@ public class ledCommunication {
 				
 				// Compiles data into one nice neat string
 				
-				if(DriverStation.getInstance().isOperatorControl() == true){
-					data = alliance + "," + gear  + "," + climbing + "," + xFinal + "," + "true ";
-				}else{
-					data = alliance + "," + gear + "," + climbing + "," + xFinal + "," + "false";
-				}
+				data = alliance + "," + gearData + "," + climbing + "," + xFinal + "," + "false";
 				
+				System.out.println(data);
 				
 				// Sends data to the Arduino/Ethernet Shield
 				try {

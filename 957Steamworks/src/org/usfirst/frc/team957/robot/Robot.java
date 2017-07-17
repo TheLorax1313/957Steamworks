@@ -91,8 +91,8 @@ public class Robot extends IterativeRobot {
 	double m_distance;
 	double m_prevDistance;
 	double m_distanceLeft;
-	stream streamCamera = new stream();
 	ledCommunication LED = new ledCommunication();
+	
 	
 	/**
 	 * This function is run when the robot is first started up and should be
@@ -137,9 +137,8 @@ public class Robot extends IterativeRobot {
         resetEncoders();
         m_distance = 80;
         m_prevDistance = 80;
-		Auto.socketSetup(5800);
 		LED.socketSetup(5801);
-		streamCamera.start();
+		Auto.startProcessing();
 
 	}
 
@@ -167,6 +166,7 @@ public class Robot extends IterativeRobot {
 		Auto.AutoDetect();
 		LED.updateAlliance();
 		LED.updateClimbingBoolean(false);
+		LED.updateGearData(false);
 		
 	}
 	
@@ -197,6 +197,7 @@ public class Robot extends IterativeRobot {
 	public void autonomousPeriodic() {
 		LED.updateAlliance();
 		LED.updateClimbingBoolean(false);
+		LED.updateGearData(false);
 		m_LidSolenoid.set(DoubleSolenoid.Value.kForward);  // open the lid
 		m_autoSelected = m_AutoChooser.getSelected();
 		m_LightsRelay.set(Relay.Value.kForward);
@@ -294,7 +295,9 @@ public class Robot extends IterativeRobot {
 	public void teleopPeriodic() {
 		LED.updateAlliance();
 		LED.updateClimbingBoolean(m_NavController.getRawAxis(3) > 0.5);
+		LED.updateGearData(Auto.gear());
 		Auto.AutoDetect();
+		LED.update_xFinal((int) Auto.acceptedXFinal());
 		boolean autoButton = false;
 		boolean AutoAimEnabled = false;
 		m_ResetGyro = m_GyroResetChooser.getSelected();
@@ -597,54 +600,22 @@ public class Robot extends IterativeRobot {
 	}
 	
 	public void AutoDrive(double speed, double XFinal){
+
 		SmartDashboard.putNumber("XFinal",XFinal);
 		if(!(XFinal == -666)){
 			if(XFinal < 5 && XFinal > -5){
-				m_Drive.mecanumDrive_Cartesian(0,-speed*0.75,0,0);
+				m_Drive.mecanumDrive_Cartesian(0,-speed*.65,0,0);
 			}else{
 				if(XFinal < 0){
-					m_Drive.mecanumDrive_Cartesian((-speed*1.25),0,0,0);
+					m_Drive.mecanumDrive_Cartesian(-0.26,0,0,0);
 				}else{
-					m_Drive.mecanumDrive_Cartesian((speed*1.25),0,0,0);
+					m_Drive.mecanumDrive_Cartesian(0.26,0,0,0);
 				}				
 			}
 		}else{
-			m_Drive.mecanumDrive_Cartesian(0,-speed,0,0);		
+			m_Drive.mecanumDrive_Cartesian(0,-speed*.65,0,0);		
 		}
 	}
 
-	public class stream extends Thread{
-		// Whatever you do, DO NOT use two of the same port number.
-		public void run(){
-				
-				int port = 1180;
-				UsbCamera camera1 = new UsbCamera("DC", 0);
-				camera1.setResolution(320, 240);
-
-				//Creates server for streaming camera. Name is
-				//local to the thread, but port # is not.
-				MjpegServer mjpegStream = new MjpegServer("MjpegStream port: "+port, port);       //Starts main camera stream
-				//Creates an image sink to feed the camera into
-				CvSink imageSink = new CvSink("imageSink port "+port); //Creates a CV image sink
-				imageSink.setSource(camera1);
-				//Creates a CV source to pump MATS into to stream
-				CvSource imageSource = new CvSource("CV Image Source", VideoMode.PixelFormat.kMJPEG, 640, 480, 30);
-				mjpegStream.setSource(imageSource);
-				//Creates a MAT to add camera feed to
-				Mat inputImage = new Mat();
-				
-				//Streams the camera on selected port using OpenCV.
-				while(true){
-					
-					//Updates the Mat with feed info and checks framerate, and skips frame if error
-					long frameTime = imageSink.grabFrame(inputImage);
-	                if (frameTime == 0) {
-	                	continue;
-	                }
-	              //Puts the frame grabbed into the CV source attached to the mjpeg server, thereby streaming it
-	                imageSource.putFrame(inputImage); 
-				}
-		}
-	}
 }
 

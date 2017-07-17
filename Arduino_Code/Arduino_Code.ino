@@ -126,14 +126,14 @@ void loop() {                                       //Ran indefinitly after setu
    
   }else{                                            //If the robot is not climbing, perform all our other LED actions
     if(gear == "true "){                            //If the robot has a gear, have the top part of our strip illuminate green
-      for(int i = 26; i < 60; i++){                 //and have the rest of the robot glow our alliance color
-        strip.setPixelColor(i,255,0,0);             //Set the top LEDs to green
+      for(int i = 26; i < 60; i++){                 //and perform an animation depending on the location of the peg.
+        strip.setPixelColor(i,255,0,0);             
       }                       
       for(int i = 0; i < 26; i++){       
-        strip.setPixelColor(i,r,0,b);               //Set one side to glow alliance colors
+        strip.setPixelColor(i,r,0,b);               
       }
       for(int i = 60; i < 119; i++){       
-        strip.setPixelColor(i,r,0,b);               //Set the other side to glow alliance colors
+        strip.setPixelColor(i,r,0,b);               
       }      
     }else{
       for(int i = 0; i < strip.numPixels(); i++){   //Sets the full LED strip to our alliance color
