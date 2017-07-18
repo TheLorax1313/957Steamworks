@@ -48,8 +48,8 @@ char translationArray[] = {                         //Array housing characters t
   " ,-0123456789abcdefghijklmnopqrstuvwxyz"         //These are the usable characters for transferring data
 };
 
-int r;
-int b;
+int r;                                              //Alliance color red value
+int b;                                              //Alliance color blue value
   
 void setup() {                                      //Sets up constants before program begins     
   Ethernet.begin(mac,ip);                           //Initalizes an Ethernet instance
@@ -143,14 +143,14 @@ void loop() {                                       //Ran indefinitly after setu
   } 
   strip.show();                                     //Update the LED strip with colors set above
 
-  if(chaseOffset == 2){
-    chaseOffset = 0;
+  if(chaseOffset == 2){ 
+    chaseOffset = 0;                               
   }else{
     chaseOffset++;
   }
   delay(50);
 
-  if(connectionTimer > 20){                          //About 1 second has passed since the last packet when one should come in every 1/4 of a second
+  if(connectionTimer > 20){                         //About 1 second has passed since the last packet when one should come in every 1/4 of a second
     connectionTimer = 0;                            //Resets the timer
     robotClient.stop();                             //Forces a socket disconnect from the RoboRio
     robotClient.connect(robotIp, 5801);             //Re-initalizes socket communication with the Rio
